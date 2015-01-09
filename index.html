@@ -1,0 +1,997 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Integração com serviço de conciliação</title>
+
+    <link href="stylesheets/screen.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="stylesheets/print.css" rel="stylesheet" type="text/css" media="print" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+      <script src="javascripts/all.js" type="text/javascript"></script>
+
+      <script>
+        $(function() {
+          setupLanguages(["xml"]);
+        });
+      </script>
+  </head>
+
+  <body class="index">
+    <a href="#" id="nav-button">
+      <span>
+        NAV
+        <img src="images/navbar.png" />
+      </span>
+    </a>
+    <div class="tocify-wrapper">
+      <img src="images/logo.png" />
+        <div class="lang-selector">
+              <a href="#" data-language-name="xml">XML de exemplo</a>
+        </div>
+        <div class="search">
+          <input type="text" class="search" id="input-search" placeholder="Search">
+        </div>
+        <ul class="search-results"></ul>
+      <div id="toc">
+      </div>
+    </div>
+    <div class="page-wrapper">
+      <div class="dark-box"></div>
+      <div class="content">
+        <h1 id='conciliao-stone'>Conciliação Stone</h1>
+<p>Diariamente diversos eventos financeiros ocorrem numa empresa. Operações, como capturas, cancelamentos, chargebacks, etc, e lançamentos, como aluguel, tarifas, ajustes, etc. Essas operações e eventos ocorrem de forma assíncrona, ou seja, podem ocorrer a qualquer momento, independentemente da ação de um operador de sistema. É o caso, por exemplo, de lançamentos de aluguel de POS, ou de um chargeback solicitado pelo cliente.</p>
+
+<p>O serviço de conciliação oferece uma forma de verificar cada uma das operações e lançamentos que ocorreram no dia anterior, seja para garantir que estão todos corretos, como obter informações financeiras e gerenciais de alto nível para sua empresa. Além disso, preocupada em reduzir os custos para seus clientes, a Stone oferece um webservice para obtenção desses eventos, ou seja, o cliente Stone não precisa contratar uma empresa que presta serviços de VAN.</p>
+<h1 id='o-servio-de-conciliao'>O serviço de conciliação</h1>
+<p>O webservice de conciliação consiste em uma requisição HTTP autenticada, utilizando uma camada segura - SSL/TLS, para a obtenção de um arquivo com todos os eventos ocorridos no dia anterior.</p>
+
+<p>Esse arquivo contém todas as transações que foram capturadas no dia anterior à data de geração do arquivo - <em>D-1</em>, ou seja, todas as transações capturadas no dia anterior ao dia da geração do arquivo. <strong>É importante ressaltar que o arquivo contém apenas as transações que foram capturadas e não as que somente foram autorizadas, uma vez que esse tipo de transação não gera movimento financeiro</strong>.</p>
+
+<p>O arquivo adota o modelo Previsão-Liquidação, diferente do que é praticado no mercado. Isso quer dizer que no Arquivo de Conciliação da Stone, estão presentes informações sobre a previsão de pagamento das transações e dos ajustes (agenda); e informações sobre a liquidação das transações e dos ajustes (extrato). <strong>É importante ressaltar que em prol da maior transparência, as transações canceladas não são tratadas como ajustes</strong>.</p>
+<h2 id='obtendo-o-arquivo'>Obtendo o arquivo</h2>
+<p>As requisições devem ser enviadas para o serviço de conciliação utilizando o método <strong>GET</strong> para o endpoint <code class="prettyprint">https://conciliation.stone.com.br/conciliation-file/{dataReferencia}</code>, onde <code class="prettyprint">{dataReferencia}</code> é a data em que as transações foram capturadas, no formato yyyymmdd.</p>
+
+<p>Por se tratar de informações sigilosas para a empresa, tanto a requisição quanto a resposta trafegam em uma camada segura criptografada e as requisições precisam, necessariamente, estar autenticadas. Essa autenticação consiste no envio de um campo de cabeçalho HTTP <code class="prettyprint">Authorization</code> contendo a chave de afiliação da loja <code class="prettyprint">AffiliationKey</code>.</p>
+
+<p>É possível, ainda, que o volume de operações e eventos seja relativamente grande. Para agilizar a transferência do arquivo, é possível solicitá-lo de forma compactada. Caso seja necessário que o arquivo esteja compactado, o sistema conciliador deve incluir o campo de cabeçalho HTTP <code class="prettyprint">Accept-Encoding: gzip</code> na requisição ao serviço.</p>
+<pre><code class="highlight plaintext">curl \
+-H "Authorization: affiliation-key" \
+-H "Accept-Encoding: gzip" \
+"https://conciliation.stone.com.br/conciliation-file/yyyymmdd"
+</code></pre>
+
+<p>Ao enviar a requisição, o serviço de conciliação retornará com um arquivo no formato XML com o seguinte padrão de nomenclatura: <code class="prettyprint">Stone.&lt;StoneCode&gt;.&lt;aaaammdd&gt;.xml</code>. Esse formato facilita a organização e identificação do arquivo pois é possível, visualmente, reconhecer a loja, através do <code class="prettyprint">&lt;StoneCode&gt;</code>, e a data de geração do arquivo, no formato <code class="prettyprint">aaaammdd</code>.</p>
+<pre><code class="highlight xml"><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;Conciliation&gt;</span>
+    <span class="nt">&lt;Header&gt;</span>
+        <span class="nt">&lt;GenerationDateTime&gt;</span>20141217200910<span class="nt">&lt;/GenerationDateTime&gt;</span>
+        <span class="nt">&lt;StoneCode&gt;</span>1234567<span class="nt">&lt;/StoneCode&gt;</span>
+        <span class="nt">&lt;MerchantName&gt;</span>Uma empresa de exemplo.<span class="nt">&lt;/MerchantName&gt;</span>
+        <span class="nt">&lt;MerchantTaxId&gt;</span>11.111.111/0001-24<span class="nt">&lt;/MerchantTaxId&gt;</span>
+        <span class="nt">&lt;LayoutVersion&gt;</span>1<span class="nt">&lt;/LayoutVersion&gt;</span>
+    <span class="nt">&lt;/Header&gt;</span>
+    <span class="nt">&lt;FinancialTransactions&gt;</span>
+        <span class="nt">&lt;Transaction&gt;</span>
+            <span class="nt">&lt;AuthorizationDateTime&gt;</span>20141216035050<span class="nt">&lt;/AuthorizationDateTime&gt;</span>
+            <span class="nt">&lt;OrderReference&gt;</span>f1fa88a068354eee<span class="nt">&lt;/OrderReference&gt;</span>
+            <span class="nt">&lt;StoneId&gt;</span>45040001941935<span class="nt">&lt;/StoneId&gt;</span>
+            <span class="nt">&lt;AuthorizationCode&gt;</span>T92788<span class="nt">&lt;/AuthorizationCode&gt;</span>
+            <span class="nt">&lt;CaptureDateTime&gt;</span>20141216015054<span class="nt">&lt;/CaptureDateTime&gt;</span>
+            <span class="nt">&lt;Brand&gt;</span>2<span class="nt">&lt;/Brand&gt;</span>
+            <span class="nt">&lt;CardNumber&gt;</span>526778******1083<span class="nt">&lt;/CardNumber&gt;</span>
+            <span class="nt">&lt;SalePlanType&gt;</span>282<span class="nt">&lt;/SalePlanType&gt;</span>
+            <span class="nt">&lt;ProductType&gt;</span>2<span class="nt">&lt;/ProductType&gt;</span>
+            <span class="nt">&lt;NumberOfInstallments&gt;</span>2<span class="nt">&lt;/NumberOfInstallments&gt;</span>
+            <span class="nt">&lt;CaptureMethod&gt;</span>Ecommerce<span class="nt">&lt;/CaptureMethod&gt;</span>
+            <span class="nt">&lt;SerialNumber</span> <span class="nt">/&gt;</span>
+            <span class="nt">&lt;CapturedAmount&gt;</span>24000<span class="nt">&lt;/CapturedAmount&gt;</span>
+            <span class="nt">&lt;AuthorizedAmount&gt;</span>24000<span class="nt">&lt;/AuthorizedAmount&gt;</span>
+            <span class="nt">&lt;AuthorizedCurrencyCode&gt;</span>986<span class="nt">&lt;/AuthorizedCurrencyCode&gt;</span>
+            <span class="nt">&lt;Installments&gt;</span>
+                <span class="nt">&lt;Installment&gt;</span>
+                    <span class="nt">&lt;InstallmentNumber&gt;</span>1<span class="nt">&lt;/InstallmentNumber&gt;</span>
+                    <span class="nt">&lt;GrossAmount&gt;</span>2000<span class="nt">&lt;/GrossAmount&gt;</span>
+                    <span class="nt">&lt;NetAmount&gt;</span>1956<span class="nt">&lt;/NetAmount&gt;</span>
+                    <span class="nt">&lt;PaymentDate&gt;</span>20150115<span class="nt">&lt;/PaymentDate&gt;</span>
+                <span class="nt">&lt;/Installment&gt;</span>
+                <span class="nt">&lt;Installment&gt;</span>
+                    <span class="nt">&lt;InstallmentNumber&gt;</span>4<span class="nt">&lt;/InstallmentNumber&gt;</span>
+                    <span class="nt">&lt;GrossAmount&gt;</span>2000<span class="nt">&lt;/GrossAmount&gt;</span>
+                    <span class="nt">&lt;NetAmount&gt;</span>1956<span class="nt">&lt;/NetAmount&gt;</span>
+                    <span class="nt">&lt;PaymentDate&gt;</span>20150415<span class="nt">&lt;/PaymentDate&gt;</span>
+                <span class="nt">&lt;/Installment&gt;</span>
+            <span class="nt">&lt;/Installments&gt;</span>
+        <span class="nt">&lt;/Transaction&gt;</span>
+    <span class="nt">&lt;/FinancialTransactions&gt;</span>
+    <span class="nt">&lt;FinancialTransactionsPayments&gt;</span>
+        <span class="nt">&lt;Transaction&gt;</span>
+            <span class="nt">&lt;AuthorizationDateTime&gt;</span>20140818145634<span class="nt">&lt;/AuthorizationDateTime&gt;</span>
+            <span class="nt">&lt;OrderReference</span> <span class="nt">/&gt;</span>
+            <span class="nt">&lt;StoneId&gt;</span>33040000408469<span class="nt">&lt;/StoneId&gt;</span>
+            <span class="nt">&lt;AuthorizationCode&gt;</span>081237<span class="nt">&lt;/AuthorizationCode&gt;</span>
+            <span class="nt">&lt;CaptureDateTime&gt;</span>20140818115634<span class="nt">&lt;/CaptureDateTime&gt;</span>
+            <span class="nt">&lt;BankId</span> <span class="nt">/&gt;</span>
+            <span class="nt">&lt;BankBrach</span> <span class="nt">/&gt;</span>
+            <span class="nt">&lt;BankAccount</span> <span class="nt">/&gt;</span>
+            <span class="nt">&lt;Installments&gt;</span>
+                <span class="nt">&lt;Installment&gt;</span>
+                    <span class="nt">&lt;InstallmentNumber&gt;</span>4<span class="nt">&lt;/InstallmentNumber&gt;</span>
+                    <span class="nt">&lt;GrossAmount&gt;</span>10000<span class="nt">&lt;/GrossAmount&gt;</span>
+                    <span class="nt">&lt;NetAmount&gt;</span>9780<span class="nt">&lt;/NetAmount&gt;</span>
+                    <span class="nt">&lt;PaymentDate&gt;</span>20141216<span class="nt">&lt;/PaymentDate&gt;</span>
+                    <span class="nt">&lt;Chargeback&gt;</span>
+                        <span class="nt">&lt;Id&gt;</span>132456<span class="nt">&lt;/Id&gt;</span>
+                        <span class="nt">&lt;Amount&gt;</span>10000<span class="nt">&lt;/Amount&gt;</span>
+                        <span class="nt">&lt;Date&gt;</span>20141216<span class="nt">&lt;/Date&gt;</span>
+                        <span class="nt">&lt;PaymentDate&gt;</span>20141217<span class="nt">&lt;/PaymentDate&gt;</span>
+                    <span class="nt">&lt;/Chargeback&gt;</span>
+                <span class="nt">&lt;/Installment&gt;</span>
+            <span class="nt">&lt;/Installments&gt;</span>
+        <span class="nt">&lt;/Transaction&gt;</span>
+    <span class="nt">&lt;/FinancialTransactionsPayments&gt;</span>
+    <span class="nt">&lt;FinancialEvents&gt;</span>
+        <span class="nt">&lt;Event&gt;</span>
+            <span class="nt">&lt;EventId&gt;</span>321<span class="nt">&lt;/EventId&gt;</span>
+            <span class="nt">&lt;Description&gt;</span>ALUGUEL DE POS<span class="nt">&lt;/Description&gt;</span>
+            <span class="nt">&lt;Type&gt;</span>1<span class="nt">&lt;/Type&gt;</span>
+            <span class="nt">&lt;PaymentDate&gt;</span>20140503<span class="nt">&lt;/PaymentDate&gt;</span>
+            <span class="nt">&lt;Amount&gt;</span>8000<span class="nt">&lt;/Amount&gt;</span>
+        <span class="nt">&lt;/Event&gt;</span>
+    <span class="nt">&lt;/FinancialEvents&gt;</span>
+    <span class="nt">&lt;FinancialEventPayments&gt;</span>
+        <span class="nt">&lt;Event&gt;</span>
+            <span class="nt">&lt;BankId&gt;</span>237<span class="nt">&lt;/BankId&gt;</span>
+            <span class="nt">&lt;BankBrach&gt;</span>111<span class="nt">&lt;/BankBrach&gt;</span>
+            <span class="nt">&lt;BankAccount&gt;</span>111111-11<span class="nt">&lt;/BankAccount&gt;</span>
+            <span class="nt">&lt;EventId&gt;</span>321<span class="nt">&lt;/EventId&gt;</span>
+            <span class="nt">&lt;Description&gt;</span>ALUGUEL DE POS<span class="nt">&lt;/Description&gt;</span>
+            <span class="nt">&lt;Type&gt;</span>1<span class="nt">&lt;/Type&gt;</span>
+            <span class="nt">&lt;PaymentDate&gt;</span>20140503<span class="nt">&lt;/PaymentDate&gt;</span>
+            <span class="nt">&lt;Amount&gt;</span>8000<span class="nt">&lt;/Amount&gt;</span>
+        <span class="nt">&lt;/Event&gt;</span>
+    <span class="nt">&lt;/FinancialEventPayments&gt;</span>
+    <span class="nt">&lt;Trailer&gt;</span>
+        <span class="nt">&lt;CapturedTransactionsQuantity&gt;</span>16<span class="nt">&lt;/CapturedTransactionsQuantity&gt;</span>
+        <span class="nt">&lt;CanceledTransactionsQuantity&gt;</span>0<span class="nt">&lt;/CanceledTransactionsQuantity&gt;</span>
+        <span class="nt">&lt;PaidTransactionsQuantity&gt;</span>35<span class="nt">&lt;/PaidTransactionsQuantity&gt;</span>
+    <span class="nt">&lt;/Trailer&gt;</span>
+<span class="nt">&lt;/Conciliation&gt;</span>
+</code></pre>
+<h3 id='n-header'>Nó Header</h3>
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>GenerationDateTime</td>
+<td>Data/Hora</td>
+<td>14</td>
+<td>Data/Hora de geração do arquivo (Formato: aaaammddHHmmss)</td>
+</tr>
+<tr>
+<td>StoneCode</td>
+<td>Num</td>
+<td>9</td>
+<td>Código identificador da loja</td>
+</tr>
+<tr>
+<td>MerchantName</td>
+<td>Alfa</td>
+<td>60</td>
+<td>Razão Social</td>
+</tr>
+<tr>
+<td>MerchantTaxId</td>
+<td>Alfa</td>
+<td>25</td>
+<td>CNPJ da loja</td>
+</tr>
+<tr>
+<td>LayoutVersion</td>
+<td>Num</td>
+<td>3</td>
+<td>Versão do Layout do arquivo</td>
+</tr>
+<tr>
+<td>Field</td>
+<td>Num</td>
+<td>26</td>
+<td>Código identificador do arquivo</td>
+</tr>
+</tbody></table>
+<h3 id='n-transaction'>Nó Transaction</h3>
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>AuthorizationDateTime</td>
+<td>Data/Hora</td>
+<td>14</td>
+<td>Data/Hora da autorização (Formato: aaaammddHHmmss)</td>
+</tr>
+<tr>
+<td>OrderReference</td>
+<td>Alfa</td>
+<td>128</td>
+<td>Código recebido pelo sistema cliente</td>
+</tr>
+<tr>
+<td>StoneId</td>
+<td>Num</td>
+<td>14</td>
+<td>Identificador único da transação (NSU)</td>
+</tr>
+<tr>
+<td>CardNumber</td>
+<td>Alfa</td>
+<td>19</td>
+<td>Número do cartão (truncado)</td>
+</tr>
+<tr>
+<td>Brand</td>
+<td>Num</td>
+<td>2</td>
+<td>Bandeira do cartão</td>
+</tr>
+<tr>
+<td>AuthorizationCode</td>
+<td>Num</td>
+<td>6</td>
+<td>Código da autorização fornecido pelo emissor.</td>
+</tr>
+<tr>
+<td>AuthorizedAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor autorizado</td>
+</tr>
+<tr>
+<td>AuthorizedCurrencyCode</td>
+<td>Num</td>
+<td>4</td>
+<td>Código da moeda</td>
+</tr>
+<tr>
+<td>CapturedAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor capturado</td>
+</tr>
+<tr>
+<td>CaptureDateTime</td>
+<td>Data/Hora</td>
+<td>14</td>
+<td>Data/Hora da captura (Formato: aaaammddHHmmss)</td>
+</tr>
+<tr>
+<td>SalePlanType</td>
+<td>Alfa</td>
+<td>60</td>
+<td>Plano de venda</td>
+</tr>
+<tr>
+<td>ProductType</td>
+<td>Alfa</td>
+<td>4</td>
+<td>Tipo do produto</td>
+</tr>
+<tr>
+<td>NumberOfInstallments</td>
+<td>Num</td>
+<td>4</td>
+<td>Número de parcelas</td>
+</tr>
+<tr>
+<td>CaptureMethod</td>
+<td>Alfa</td>
+<td>2</td>
+<td>Meio de captura</td>
+</tr>
+<tr>
+<td>SerialNumber</td>
+<td>Alfa</td>
+<td>50</td>
+<td>Número serial do POS (vazio caso o meio de captura seja ecommerce)</td>
+</tr>
+<tr>
+<td>BankId</td>
+<td>Num</td>
+<td>3</td>
+<td>Código do banco</td>
+</tr>
+<tr>
+<td>BankBranch</td>
+<td>Alfa</td>
+<td>6</td>
+<td>Agência bancária</td>
+</tr>
+<tr>
+<td>BankAccount</td>
+<td>Alfa</td>
+<td>11</td>
+<td>Conta bancária</td>
+</tr>
+<tr>
+<td>Installments</td>
+<td>Container</td>
+<td>##</td>
+<td>Contém as parcelas da transação.</td>
+</tr>
+</tbody></table>
+<h3 id='n-installment'>Nó Installment</h3>
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>InstallmentNumber</td>
+<td>Num</td>
+<td>4</td>
+<td>Número da parcela</td>
+</tr>
+<tr>
+<td>GrossAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor bruto da parcela</td>
+</tr>
+<tr>
+<td>NetAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor líquido da parcela</td>
+</tr>
+<tr>
+<td>PaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data de pagamento da parcela (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>AdvanceAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor cobrado pela antecipação do recebível</td>
+</tr>
+<tr>
+<td>OriginalPaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data original de pagamento da parcela (Formato: aaaammdd)</td>
+</tr>
+</tbody></table>
+<h3 id='n-trailer'>Nó Trailer</h3>
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>CapturedTransactionsQuantity</td>
+<td>Num</td>
+<td>10</td>
+<td>Quantidade total de transações capturadas</td>
+</tr>
+<tr>
+<td>RefundedTransactionsQuantity</td>
+<td>Num</td>
+<td>10</td>
+<td>Quantidade total de transações canceladas</td>
+</tr>
+<tr>
+<td>PaidTransactionsQuantity</td>
+<td>Num</td>
+<td>10</td>
+<td>Quantidade total de transações pagas</td>
+</tr>
+</tbody></table>
+<h1 id='tabela-de-referncia-dos-elementos'>Tabela de referência dos elementos</h1><h2 id='chargeback'>ChargeBack</h2>
+<p>Nó filho de <a href="#installment">Installment</a> que contém informações sobre o chargeback, como data do pagemento, Id do chargeback, data em que ocorreu o chargeback, etc.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Id</td>
+<td>Num</td>
+<td>10</td>
+<td>Identificador do chargeback</td>
+</tr>
+<tr>
+<td>Amount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor do chargeback</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que ocorreu o chargeback. (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>PaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que o chargeback será descontado. (Formato: aaaammdd)</td>
+</tr>
+</tbody></table>
+<h2 id='chargebackrefund'>ChargeBackRefund</h2>
+<p>Nó filho de <a href="#installment">Installment</a> que contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Id</td>
+<td>Num</td>
+<td>10</td>
+<td>Identificador da reapresentação do chargeback</td>
+</tr>
+<tr>
+<td>Amount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor da reapresentação do chargeback</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que ocorreu a reapresentação do chargeback. (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>PaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que a reapresentação o chargeback será creditada. (Formato: aaaammdd)</td>
+</tr>
+</tbody></table>
+<h2 id='conciliation'>Conciliation</h2>
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><a href="#header">Header</a></td>
+<td>Contém informações referentes à loja e ao arquivo, como razão social, CNPJ, data de geração do arquivo, etc.</td>
+</tr>
+<tr>
+<td><a href="#financialtransactions">FinancialTransactions</a></td>
+<td>Contém as transações capturadas no dia, inclusive as transações que foram capturadas e canceladas no mesmo dia.</td>
+</tr>
+<tr>
+<td><a href="#financialevents">FinancialEvents</a></td>
+<td>Contém os eventos que ocorreram no dia, como (Ajuste MDR, aluguel de POS, etc)</td>
+</tr>
+<tr>
+<td><a href="#financialtransactionpayments">FinancialTransactionPayments</a></td>
+<td>Contém as transações que foram pagas no dia. Contém também os descontos (referentes à cancelamentos) realizados no dia.</td>
+</tr>
+<tr>
+<td><a href="#finacialeventpayments">FinacialEventPayments</a></td>
+<td>Contém os eventos que foram descontos ou creditados no dia, como (Ajuste MDR, aluguel de POS, etc)</td>
+</tr>
+<tr>
+<td><a href="#messages">Messages</a></td>
+<td>Contém as observações referentes às operações do dia.</td>
+</tr>
+<tr>
+<td><a href="#trailer">Trailer</a></td>
+<td>Contém os totalizadores do arquivo, como total de transações capturadas, total líquido de transações pagas, etc.</td>
+</tr>
+</tbody></table>
+<h2 id='event'>Event</h2>
+<p>Nó filho de <a href="#financialevents">FinancialEvents</a> ou de <a href="#finacialeventpayments">FinacialEventPayments</a>, descreve os detalhes do evento ocorrido.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>EventId</td>
+<td>Num</td>
+<td>10</td>
+<td>Código identificador do evento</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>Alfa</td>
+<td>60</td>
+<td>Descrição do evento</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>Num</td>
+<td>2</td>
+<td>Tipo do evento</td>
+</tr>
+<tr>
+<td>PaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que o evento será pago. (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>Amount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor do evento</td>
+</tr>
+<tr>
+<td>BankId</td>
+<td>Num</td>
+<td>3</td>
+<td>Código do banco</td>
+</tr>
+<tr>
+<td>BankBranch</td>
+<td>Alfa</td>
+<td>6</td>
+<td>Agência bancária</td>
+</tr>
+<tr>
+<td>BankAccount</td>
+<td>Alfa</td>
+<td>11</td>
+<td>Conta bancária</td>
+</tr>
+</tbody></table>
+<h2 id='financialevents'>FinancialEvents</h2>
+<p>Nó filho de <a href="#conciliation">Conciliation</a> que contém os eventos que ocorreram no dia, como (Ajuste MDR, aluguel de POS, etc)</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><a href="#event">Event</a></td>
+<td>Contém informações sobre o evento ocorrido</td>
+</tr>
+</tbody></table>
+<h2 id='finacialeventpayments'>FinacialEventPayments</h2>
+<p>Nó filho de <a href="#conciliation">Conciliation</a> que contém os eventos que foram descontos ou creditados no dia, como (Ajuste MDR, aluguel de POS, etc).</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><a href="#event">Event</a></td>
+<td>Contém informações sobre o evento ocorrido</td>
+</tr>
+</tbody></table>
+<h2 id='financialtransactions'>FinancialTransactions</h2>
+<p>Nó filho de <a href="#conciliation">Conciliation</a> que contém as transações capturadas no dia, inclusive as transações que foram capturadas e canceladas no mesmo dia.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><a href="#transaction">Transaction</a></td>
+<td>Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.</td>
+</tr>
+</tbody></table>
+<h2 id='financialtransactionpayments'>FinancialTransactionPayments</h2>
+<p>Nó filho de <a href="#conciliation">Conciliation</a> que contém as transações que foram pagas no dia. Contém também os descontos, referentes à cancelamentos, realizados no dia.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><a href="#transaction">Transaction</a></td>
+<td>Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.</td>
+</tr>
+</tbody></table>
+<h2 id='header'>Header</h2>
+<p>Nó filho de <a href="#conciliation">Conciliation</a> que contém as informações referentes à loja e ao arquivo, como razão social, CNPJ, data de geração do arquivo, etc.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>GenerationDateTime</td>
+<td>Data/Hora</td>
+<td>14</td>
+<td>Data/Hora de geração do arquivo (Formato: aaaammddHHmmss)</td>
+</tr>
+<tr>
+<td>StoneCode</td>
+<td>Num</td>
+<td>9</td>
+<td>Código identificador da loja</td>
+</tr>
+<tr>
+<td>MerchantName</td>
+<td>Alfa</td>
+<td>60</td>
+<td>Razão Social</td>
+</tr>
+<tr>
+<td>MerchantTaxId</td>
+<td>Alfa</td>
+<td>25</td>
+<td>CNPJ da loja</td>
+</tr>
+<tr>
+<td>LayoutVersion</td>
+<td>Num</td>
+<td>3</td>
+<td>Versão do Layout do arquivo</td>
+</tr>
+<tr>
+<td>Field</td>
+<td>Num</td>
+<td>26</td>
+<td>Código identificador do arquivo</td>
+</tr>
+</tbody></table>
+<h2 id='installment'>Installment</h2>
+<p>Nó filho de <a href="#installments">Installments</a> que contém informações referentes a uma parcela específica, como valor bruto e valor líquido, número da parcela etc.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>InstallmentNumber</td>
+<td>Num</td>
+<td>4</td>
+<td>Número da parcela</td>
+</tr>
+<tr>
+<td>GrossAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor bruto da parcela</td>
+</tr>
+<tr>
+<td>NetAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor líquido da parcela</td>
+</tr>
+<tr>
+<td>PaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data de pagamento da parcela (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>AdvanceAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor cobrado pela antecipação do recebível</td>
+</tr>
+<tr>
+<td>OriginalPaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data original de pagamento da parcela (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td><a href="#chargeback">ChargeBack</a></td>
+<td>Container</td>
+<td>##</td>
+<td>Contém informações sobre o chargeback, como data do pagemento, Id do chargeback, data em que ocorreu o chargeback, etc.</td>
+</tr>
+<tr>
+<td><a href="#chargebackrefund">ChargeBackRefund</a></td>
+<td>Container</td>
+<td>##</td>
+<td>Contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.</td>
+</tr>
+</tbody></table>
+<h2 id='installments'>Installments</h2>
+<p>Nó filho de <a href="#transaction">Transaction</a> que contém as parcelas da transação.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><a href="#installment">Installment</a></td>
+<td>Contém informações referentes a uma parcela específica, como valor bruto e valor líquido, número da parcela etc.</td>
+</tr>
+</tbody></table>
+<h2 id='message'>Message</h2>
+<p>Nó filho de <a href="#messages">Messages</a> que contém as observações referentes às operações do dia.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>MessageId</td>
+<td>Num</td>
+<td>9</td>
+<td>Código identificador do mensagem</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>Alfa</td>
+<td>200</td>
+<td>Descrição da mensagem</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>Num</td>
+<td>4</td>
+<td>Tipo da mensagem</td>
+</tr>
+</tbody></table>
+<h2 id='messages'>Messages</h2>
+<p>Nó filho de <a href="#conciliation">Conciliation</a> que contém as observações referentes às operações do dia.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><a href="#message">Message</a></td>
+<td>Contém a informação referente à observação referente às operações do dia.</td>
+</tr>
+</tbody></table>
+<h2 id='refund'>Refund</h2>
+<p>Nó filho de <a href="#transaction">Transaction</a> que contém informações referentes ao cancelamento, como data de desconto do cancelamento e valor total do cancelamento.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>RefundAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor do cancelamento (pode ser igual ou maior que o valor capturado)</td>
+</tr>
+<tr>
+<td>RefundPaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que o cancelamento/estorno será descontado. (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>RefundDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que ocorreu o cancelamento. (Formato: aaaammdd)</td>
+</tr>
+</tbody></table>
+<h2 id='trailer'>Trailer</h2>
+<p>Nó filho de <a href="#conciliation">Conciliation</a> que contém os totalizadores do arquivo, como total de transações capturadas, total líquido de transações pagas, etc.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>CapturedTransactionsQuantity</td>
+<td>Num</td>
+<td>10</td>
+<td>Quantidade total de transações capturadas</td>
+</tr>
+<tr>
+<td>RefundedTransactionsQuantity</td>
+<td>Num</td>
+<td>10</td>
+<td>Quantidade total de transações canceladas</td>
+</tr>
+<tr>
+<td>PaidTransactionsQuantity</td>
+<td>Num</td>
+<td>10</td>
+<td>Quantidade total de transações pagas</td>
+</tr>
+</tbody></table>
+<h2 id='transaction'>Transaction</h2>
+<p>Nó filho de <a href="#financialtransactions">FinancialTransactions</a> ou de <a href="#financialtransactionpayments">FinancialTransactionPayments</a> que contém as informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>AuthorizationDateTime</td>
+<td>Data/Hora</td>
+<td>14</td>
+<td>Data/Hora da autorização (Formato: aaaammddHHmmss)</td>
+</tr>
+<tr>
+<td>OrderReference</td>
+<td>Alfa</td>
+<td>128</td>
+<td>Código recebido pelo sistema cliente</td>
+</tr>
+<tr>
+<td>StoneId</td>
+<td>Num</td>
+<td>14</td>
+<td>Identificador único da transação (NSU)</td>
+</tr>
+<tr>
+<td>CardNumber</td>
+<td>Alfa</td>
+<td>19</td>
+<td>Número do cartão (truncado)</td>
+</tr>
+<tr>
+<td>Brand</td>
+<td>Num</td>
+<td>2</td>
+<td>Bandeira do cartão</td>
+</tr>
+<tr>
+<td>AuthorizationCode</td>
+<td>Num</td>
+<td>6</td>
+<td>Código da autorização fornecido pelo emissor.</td>
+</tr>
+<tr>
+<td>AuthorizedAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor autorizado</td>
+</tr>
+<tr>
+<td>AuthorizedCurrencyCode</td>
+<td>Num</td>
+<td>4</td>
+<td>Código da moeda</td>
+</tr>
+<tr>
+<td>CapturedAmount</td>
+<td>Num</td>
+<td>20</td>
+<td>Valor capturado</td>
+</tr>
+<tr>
+<td>CaptureDateTime</td>
+<td>Data/Hora</td>
+<td>14</td>
+<td>Data/Hora da captura (Formato: aaaammddHHmmss)</td>
+</tr>
+<tr>
+<td>SalePlanType</td>
+<td>Alfa</td>
+<td>60</td>
+<td>Plano de venda</td>
+</tr>
+<tr>
+<td>ProductType</td>
+<td>Alfa</td>
+<td>4</td>
+<td>Tipo do produto</td>
+</tr>
+<tr>
+<td>NumberOfInstallments</td>
+<td>Num</td>
+<td>4</td>
+<td>Número de parcelas</td>
+</tr>
+<tr>
+<td>CaptureMethod</td>
+<td>Alfa</td>
+<td>2</td>
+<td>Meio de captura</td>
+</tr>
+<tr>
+<td>SerialNumber</td>
+<td>Alfa</td>
+<td>50</td>
+<td>Número serial do POS (vazio caso o meio de captura seja ecommerce)</td>
+</tr>
+<tr>
+<td>BankId</td>
+<td>Num</td>
+<td>3</td>
+<td>Código do banco</td>
+</tr>
+<tr>
+<td>BankBranch</td>
+<td>Alfa</td>
+<td>6</td>
+<td>Agência bancária</td>
+</tr>
+<tr>
+<td>BankAccount</td>
+<td>Alfa</td>
+<td>11</td>
+<td>Conta bancária</td>
+</tr>
+<tr>
+<td><a href="#installments">Installments</a></td>
+<td>Container</td>
+<td>##</td>
+<td>Contém as parcelas da transação.</td>
+</tr>
+<tr>
+<td><a href="#refund">Refund</a></td>
+<td>Container</td>
+<td>##</td>
+<td>Contém informações referentes ao cancelamento, como data de desconto do cancelamento e valor total do cancelamento.</td>
+</tr>
+</tbody></table>
+
+      </div>
+      <div class="dark-box">
+          <div class="lang-selector">
+                <a href="#" data-language-name="xml">XML de exemplo</a>
+          </div>
+      </div>
+    </div>
+  </body>
+</html>
