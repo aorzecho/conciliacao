@@ -28,7 +28,7 @@
     <div class="tocify-wrapper">
       <img src="images/logo.png" />
         <div class="lang-selector">
-              <a href="#" data-language-name="xml">XML de exemplo</a>
+              <a href="#" data-language-name="xml">Exemplo de conciliação</a>
         </div>
         <div class="search">
           <input type="text" class="search" id="input-search" placeholder="Search">
@@ -50,19 +50,21 @@
 <p>Esse arquivo contém todas as transações que foram capturadas no dia anterior à data de geração do arquivo - <em>D-1</em>, ou seja, todas as transações capturadas no dia anterior ao dia da geração do arquivo. <strong>É importante ressaltar que o arquivo contém apenas as transações que foram capturadas e não as que somente foram autorizadas, uma vez que esse tipo de transação não gera movimento financeiro</strong>.</p>
 
 <p>O arquivo adota o modelo Previsão-Liquidação, diferente do que é praticado no mercado. Isso quer dizer que no Arquivo de Conciliação da Stone, estão presentes informações sobre a previsão de pagamento das transações e dos ajustes (agenda); e informações sobre a liquidação das transações e dos ajustes (extrato). <strong>É importante ressaltar que em prol da maior transparência, as transações canceladas não são tratadas como ajustes</strong>.</p>
-<h2 id='obtendo-o-arquivo'>Obtendo o arquivo</h2>
-<p>As requisições devem ser enviadas para o serviço de conciliação utilizando o método <strong>GET</strong> para o endpoint <code class="prettyprint">https://conciliation.stone.com.br/conciliation-file/{dataReferencia}</code>, onde <code class="prettyprint">{dataReferencia}</code> é a data em que as transações foram capturadas, no formato yyyymmdd.</p>
-
-<p>Por se tratar de informações sigilosas para a empresa, tanto a requisição quanto a resposta trafegam em uma camada segura criptografada e as requisições precisam, necessariamente, estar autenticadas. Essa autenticação consiste no envio de um campo de cabeçalho HTTP <code class="prettyprint">Authorization</code> contendo a chave de afiliação da loja <code class="prettyprint">AffiliationKey</code>.</p>
-
-<p>É possível, ainda, que o volume de operações e eventos seja relativamente grande. Para agilizar a transferência do arquivo, é possível solicitá-lo de forma compactada. Caso seja necessário que o arquivo esteja compactado, o sistema conciliador deve incluir o campo de cabeçalho HTTP <code class="prettyprint">Accept-Encoding: gzip</code> na requisição ao serviço.</p>
-<pre><code class="highlight plaintext">curl \
+<h2 id='obtendo-o-arquivo'>Obtendo o arquivo</h2><pre><code class="highlight plaintext">curl \
 -H "Authorization: affiliation-key" \
 -H "Accept-Encoding: gzip" \
 "https://conciliation.stone.com.br/conciliation-file/yyyymmdd"
 </code></pre>
 
+<p>As requisições devem ser enviadas para o serviço de conciliação utilizando o método <strong>GET</strong> para o endpoint <code class="prettyprint">https://conciliation.stone.com.br/conciliation-file/{dataReferencia}</code>, onde <code class="prettyprint">{dataReferencia}</code> é a data em que as transações foram capturadas, no formato yyyymmdd.</p>
+
+<p>Por se tratar de informações sigilosas para a empresa, tanto a requisição quanto a resposta trafegam em uma camada segura criptografada e as requisições precisam, necessariamente, estar autenticadas. Essa autenticação consiste no envio de um campo de cabeçalho HTTP <code class="prettyprint">Authorization</code> contendo a chave de afiliação da loja <code class="prettyprint">AffiliationKey</code>.</p>
+
+<p>É possível, ainda, que o volume de operações e eventos seja relativamente grande. Para agilizar a transferência do arquivo, é possível solicitá-lo de forma compactada. Caso seja necessário que o arquivo esteja compactado, o sistema conciliador deve incluir o campo de cabeçalho HTTP <code class="prettyprint">Accept-Encoding: gzip</code> na requisição ao serviço.</p>
+
 <p>Ao enviar a requisição, o serviço de conciliação retornará com um arquivo no formato XML com o seguinte padrão de nomenclatura: <code class="prettyprint">Stone.&lt;StoneCode&gt;.&lt;aaaammdd&gt;.xml</code>. Esse formato facilita a organização e identificação do arquivo pois é possível, visualmente, reconhecer a loja, através do <code class="prettyprint">&lt;StoneCode&gt;</code>, e a data de geração do arquivo, no formato <code class="prettyprint">aaaammdd</code>.</p>
+<h3 id='arquivo-de-conciliao-de-exemplo'>Arquivo de conciliação de exemplo</h3>
+<p>Você pode fazer o download de um arquivo de conciliação com um exemplo mais completo através do seguinte link: <a href="attachment/Stone.123456789.20141103.xml">Stone.123456789.20141103.xml</a></p>
 <pre><code class="highlight xml"><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
 <span class="nt">&lt;Conciliation&gt;</span>
     <span class="nt">&lt;Header&gt;</span>
@@ -989,7 +991,7 @@
       </div>
       <div class="dark-box">
           <div class="lang-selector">
-                <a href="#" data-language-name="xml">XML de exemplo</a>
+                <a href="#" data-language-name="xml">Exemplo de conciliação</a>
           </div>
       </div>
     </div>
