@@ -2,7 +2,7 @@
 title: Integração com serviço de conciliação
 
 language_tabs:
-  - xml: XML de exemplo
+  - xml: Exemplo de conciliação
 
 search: true
 ---
@@ -23,12 +23,6 @@ O arquivo adota o modelo Previsão-Liquidação, diferente do que é praticado n
 
 ## Obtendo o arquivo
 
-As requisições devem ser enviadas para o serviço de conciliação utilizando o método **GET** para o endpoint `https://conciliation.stone.com.br/conciliation-file/{dataReferencia}`, onde `{dataReferencia}` é a data em que as transações foram capturadas, no formato yyyymmdd.
-
-Por se tratar de informações sigilosas para a empresa, tanto a requisição quanto a resposta trafegam em uma camada segura criptografada e as requisições precisam, necessariamente, estar autenticadas. Essa autenticação consiste no envio de um campo de cabeçalho HTTP `Authorization` contendo a chave de afiliação da loja `AffiliationKey`.
-
-É possível, ainda, que o volume de operações e eventos seja relativamente grande. Para agilizar a transferência do arquivo, é possível solicitá-lo de forma compactada. Caso seja necessário que o arquivo esteja compactado, o sistema conciliador deve incluir o campo de cabeçalho HTTP `Accept-Encoding: gzip` na requisição ao serviço.
-
 ```
 curl \
 -H "Authorization: affiliation-key" \
@@ -36,7 +30,17 @@ curl \
 "https://conciliation.stone.com.br/conciliation-file/yyyymmdd"
 ```
 
+As requisições devem ser enviadas para o serviço de conciliação utilizando o método **GET** para o endpoint `https://conciliation.stone.com.br/conciliation-file/{dataReferencia}`, onde `{dataReferencia}` é a data em que as transações foram capturadas, no formato yyyymmdd.
+
+Por se tratar de informações sigilosas para a empresa, tanto a requisição quanto a resposta trafegam em uma camada segura criptografada e as requisições precisam, necessariamente, estar autenticadas. Essa autenticação consiste no envio de um campo de cabeçalho HTTP `Authorization` contendo a chave de afiliação da loja `AffiliationKey`.
+
+É possível, ainda, que o volume de operações e eventos seja relativamente grande. Para agilizar a transferência do arquivo, é possível solicitá-lo de forma compactada. Caso seja necessário que o arquivo esteja compactado, o sistema conciliador deve incluir o campo de cabeçalho HTTP `Accept-Encoding: gzip` na requisição ao serviço.
+
 Ao enviar a requisição, o serviço de conciliação retornará com um arquivo no formato XML com o seguinte padrão de nomenclatura: `Stone.<StoneCode>.<aaaammdd>.xml`. Esse formato facilita a organização e identificação do arquivo pois é possível, visualmente, reconhecer a loja, através do `<StoneCode>`, e a data de geração do arquivo, no formato `aaaammdd`.
+
+### Arquivo de conciliação de exemplo
+
+Você pode fazer o download de um arquivo de conciliação com um exemplo mais completo através do seguinte link: [Stone.123456789.20141103.xml](/attachment/Stone.123456789.20141103.xml)
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
