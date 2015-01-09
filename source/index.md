@@ -51,12 +51,12 @@ Ao enviar a requisição, o serviço de conciliação retornará com um arquivo 
     <FinancialTransactions>
         <Transaction>
             <AuthorizationDateTime>20141216035050</AuthorizationDateTime>
-            <OrderReference>f1fa88a068354eee</OrderReference>
-            <StoneId>45040001941935</StoneId>
-            <AuthorizationCode>T92788</AuthorizationCode>
+            <OrderReference>abdcefa068354aaa</OrderReference>
+            <StoneId>12345678901234</StoneId>
+            <AuthorizationCode>T12345</AuthorizationCode>
             <CaptureDateTime>20141216015054</CaptureDateTime>
             <Brand>2</Brand>
-            <CardNumber>526778******1083</CardNumber>
+            <CardNumber>526778******1234</CardNumber>
             <SalePlanType>282</SalePlanType>
             <ProductType>2</ProductType>
             <NumberOfInstallments>2</NumberOfInstallments>
@@ -85,7 +85,7 @@ Ao enviar a requisição, o serviço de conciliação retornará com um arquivo 
         <Transaction>
             <AuthorizationDateTime>20140818145634</AuthorizationDateTime>
             <OrderReference />
-            <StoneId>33040000408469</StoneId>
+            <StoneId>12345678901234</StoneId>
             <AuthorizationCode>081237</AuthorizationCode>
             <CaptureDateTime>20140818115634</CaptureDateTime>
             <BankId />
