@@ -9,9 +9,11 @@ search: true
 
 # Conciliação Stone
 
-Diariamente diversos eventos financeiros ocorrem numa empresa. Operações, como capturas, cancelamentos, chargebacks, etc, e lançamentos, como aluguel, tarifas, ajustes, etc. Essas operações e eventos ocorrem de forma assíncrona, ou seja, podem ocorrer a qualquer momento, independentemente da ação de um operador de sistema. É o caso, por exemplo, de lançamentos de aluguel de POS, ou de um chargeback solicitado pelo cliente.
+A Conciliação Stone é uma ferramenta que disponibiliza diariamente aos estabelecimentos, a demonstração das transações realizadas e suas respectivas informações financeiras, aluguel de POS, ocorridos em D-1. Esta ferramenta permite o acompanhamento desde a captura até o pagamento/desconto de cada uma das transações e lançamentos realizados.
 
-O serviço de conciliação oferece uma forma de verificar cada uma das operações e lançamentos que ocorreram no dia anterior, seja para garantir que estão todos corretos, como obter informações financeiras e gerenciais de alto nível para sua empresa. Além disso, preocupada em reduzir os custos para seus clientes, a Stone oferece um webservice para obtenção desses eventos, ou seja, o cliente Stone não precisa contratar uma empresa que presta serviços de VAN.
+Com a Conciliação Stone, o lojista consegue visualizar de forma bastante clara, o valor líquido e bruto de cada parcela, o valor líquido e bruto de cancelamento parcial e total, quais parcelas da transação foram antecipadas e qual foi o custo da antecipação de cada parcela, chargebacks a serem descontados, etc. 
+
+Tudo isto num mesmo lugar, sem a necessidade de tratar vários arquivos com layouts diferentes. Com a Conciliação Stone, o cliente obtém o arquivo de conciliação diretamente conosco, de maneira segura, através de um Webservice que retorna o arquivo de conciliação.
 
 # O serviço de conciliação
 
@@ -35,8 +37,6 @@ As requisições devem ser enviadas para o serviço de conciliação utilizando 
 Por se tratar de informações sigilosas para a empresa, tanto a requisição quanto a resposta trafegam em uma camada segura criptografada e as requisições precisam, necessariamente, estar autenticadas. Essa autenticação consiste no envio de um campo de cabeçalho HTTP `Authorization` contendo a chave de afiliação da loja `AffiliationKey`.
 
 É possível, ainda, que o volume de operações e eventos seja relativamente grande. Para agilizar a transferência do arquivo, é possível solicitá-lo de forma compactada. Caso seja necessário que o arquivo esteja compactado, o sistema conciliador deve incluir o campo de cabeçalho HTTP `Accept-Encoding: gzip` na requisição ao serviço.
-
-Ao enviar a requisição, o serviço de conciliação retornará com um arquivo no formato XML com o seguinte padrão de nomenclatura: `Stone.<StoneCode>.<aaaammdd>.xml`. Esse formato facilita a organização e identificação do arquivo pois é possível, visualmente, reconhecer a loja, através do `<StoneCode>`, e a data de geração do arquivo, no formato `aaaammdd`.
 
 ### Arquivo de conciliação de exemplo
 
