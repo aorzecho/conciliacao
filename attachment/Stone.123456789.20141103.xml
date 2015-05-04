@@ -21,14 +21,14 @@
 			<NumberOfInstallments>1</NumberOfInstallments>
 			<CaptureMethod>Ecommerce</CaptureMethod>
 			<SerialNumber />
-			<CapturedAmount>1</CapturedAmount>
-			<AuthorizedAmount>3979</AuthorizedAmount>
+			<CapturedAmount>1.000000</CapturedAmount>
+			<AuthorizedAmount>39.790000</AuthorizedAmount>
 			<AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
 			<Installments>
 				<Installment>
 					<InstallmentNumber>1</InstallmentNumber>
-					<GrossAmount>3979</GrossAmount>
-					<NetAmount>3859</NetAmount>
+					<GrossAmount>39.790000</GrossAmount>
+					<NetAmount>38.590000</NetAmount>
 					<PaymentDate>20140909</PaymentDate>
 				</Installment>
 			</Installments>
@@ -46,20 +46,20 @@
 			<NumberOfInstallments>1</NumberOfInstallments>
 			<CaptureMethod>Ecommerce</CaptureMethod>
 			<SerialNumber />
-			<CapturedAmount>1</CapturedAmount>
-			<AuthorizedAmount>7958</AuthorizedAmount>
+			<CapturedAmount>1.000000</CapturedAmount>
+			<AuthorizedAmount>79.580000</AuthorizedAmount>
 			<AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
 			<Installments>
 				<Installment>
 					<InstallmentNumber>1</InstallmentNumber>
-					<GrossAmount>3979</GrossAmount>
-					<NetAmount>3859</NetAmount>
+					<GrossAmount>39.790000</GrossAmount>
+					<NetAmount>38.590000</NetAmount>
 					<PaymentDate>20140909</PaymentDate>
 				</Installment>
 				<Installment>
 					<InstallmentNumber>2</InstallmentNumber>
-					<GrossAmount>3979</GrossAmount>
-					<NetAmount>3859</NetAmount>
+					<GrossAmount>39.790000</GrossAmount>
+					<NetAmount>38.590000</NetAmount>
 					<PaymentDate>20141009</PaymentDate>
 				</Installment>
 			</Installments>
@@ -77,25 +77,25 @@
 			<NumberOfInstallments>1</NumberOfInstallments>
 			<CaptureMethod>Ecommerce</CaptureMethod>
 			<SerialNumber />
-			<CapturedAmount>1</CapturedAmount>
-			<AuthorizedAmount>7958</AuthorizedAmount>
+			<CapturedAmount>1.000000</CapturedAmount>
+			<AuthorizedAmount>79.580000</AuthorizedAmount>
 			<AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
 			<Refund>
-				<RefundAmount>7958</RefundAmount>
+				<RefundAmount>79.580000</RefundAmount>
 				<RefundPaymentDate>20140811</RefundPaymentDate>
 				<RefundDate>20140810</RefundDate>
 			</Refund>
 			<Installments>
 				<Installment>
 					<InstallmentNumber>1</InstallmentNumber>
-					<GrossAmount>3979</GrossAmount>
-					<NetAmount>3859</NetAmount>
+					<GrossAmount>39.790000</GrossAmount>
+					<NetAmount>38.590000</NetAmount>
 					<PaymentDate>20140909</PaymentDate>
 				</Installment>
 				<Installment>
 					<InstallmentNumber>2</InstallmentNumber>
-					<GrossAmount>3979</GrossAmount>
-					<NetAmount>3859</NetAmount>
+					<GrossAmount>39.790000</GrossAmount>
+					<NetAmount>38.590000</NetAmount>
 					<PaymentDate>20141009</PaymentDate>
 				</Installment>
 			</Installments>
@@ -107,21 +107,21 @@
 			<AuthorizationCode>596603</AuthorizationCode>
 			<CaptureDateTime>20140806080201</CaptureDateTime>
 			<Refund>
-				<RefundAmount>7958</RefundAmount>
+				<RefundAmount>79.580000</RefundAmount>
 				<RefundPaymentDate>20140811</RefundPaymentDate>
 				<RefundDate>20140807</RefundDate>
 			</Refund>
 			<Installments>
 				<Installment>
 					<InstallmentNumber>1</InstallmentNumber>
-					<GrossAmount>3979</GrossAmount>
-					<NetAmount>3859</NetAmount>
+					<GrossAmount>39.790000</GrossAmount>
+					<NetAmount>38.590000</NetAmount>
 					<PaymentDate>20140906</PaymentDate>
 				</Installment>
 				<Installment>
 					<InstallmentNumber>2</InstallmentNumber>
-					<GrossAmount>3979</GrossAmount>
-					<NetAmount>3859</NetAmount>
+					<GrossAmount>39.790000</GrossAmount>
+					<NetAmount>38.590000</NetAmount>
 					<PaymentDate>20141006</PaymentDate>
 				</Installment>
 			</Installments>
@@ -140,8 +140,8 @@
 			<Installments>
 				<Installment>
 					<InstallmentNumber>1</InstallmentNumber>
-					<GrossAmount>25100</GrossAmount>
-					<NetAmount>24347</NetAmount>
+					<GrossAmount>251.000000</GrossAmount>
+					<NetAmount>243.470000</NetAmount>
 					<PaymentDate>20140810</PaymentDate>
 				</Installment>
 			</Installments>
@@ -158,12 +158,12 @@
 			<Installments>
 				<Installment>
 					<InstallmentNumber>1</InstallmentNumber>
-					<GrossAmount>10000</GrossAmount>
-					<NetAmount>9700</NetAmount>
+					<GrossAmount>100.000000</GrossAmount>
+					<NetAmount>97.000000</NetAmount>
 					<PaymentDate>20140711</PaymentDate>
 					<Chargeback>
 						<Id>123</Id>
-						<Amount>10000</Amount>
+						<Amount>100.000000</Amount>
 						<Date>20140624</Date>
 						<PaymentDate>20140810</PaymentDate>
 					</Chargeback>
@@ -182,12 +182,12 @@
 			<Installments>
 				<Installment>
 					<InstallmentNumber>1</InstallmentNumber>
-					<GrossAmount>10000</GrossAmount>
-					<NetAmount>9700</NetAmount>
+					<GrossAmount>100.000000</GrossAmount>
+					<NetAmount>97.000000</NetAmount>
 					<PaymentDate>20140711</PaymentDate>
 					<ChargebackRefund>
 						<Id>123</Id>
-						<Amount>10000</Amount>
+						<Amount>100.000000</Amount>
 						<Date>20140624</Date>
 						<PaymentDate>20140810</PaymentDate>
 					</ChargebackRefund>
@@ -206,16 +206,16 @@
 			<Installments>
 				<Installment>
 					<InstallmentNumber>1</InstallmentNumber>
-					<GrossAmount>10000</GrossAmount>
-					<NetAmount>9700</NetAmount>
+					<GrossAmount>100.000000</GrossAmount>
+					<NetAmount>97.000000</NetAmount>
 					<PaymentDate>20140810</PaymentDate>
 				</Installment>
 				<Installment>
 					<InstallmentNumber>2</InstallmentNumber>
-					<GrossAmount>10000</GrossAmount>
-					<NetAmount>9600</NetAmount>
+					<GrossAmount>100.000000</GrossAmount>
+					<NetAmount>96.000000</NetAmount>
 					<PaymentDate>20140810</PaymentDate>
-					<AdvanceAmount>100</AdvanceAmount>
+					<AdvanceAmount>1.000000</AdvanceAmount>
 					<OriginalPaymentDate>20140910</OriginalPaymentDate>
 				</Installment>
 			</Installments>
@@ -230,21 +230,21 @@
 			<BankBrach>9999</BankBrach>
 			<BankAccount>9999-9</BankAccount>
 			<Refund>
-				<RefundAmount>20000</RefundAmount>
+				<RefundAmount>200.000000</RefundAmount>
 				<RefundPaymentDate>20140810</RefundPaymentDate>
 				<RefundDate>20140807</RefundDate>
 			</Refund>
 			<Installments>
 				<Installment>
 					<InstallmentNumber>1</InstallmentNumber>
-					<GrossAmount>10000</GrossAmount>
-					<NetAmount>9700</NetAmount>
+					<GrossAmount>100.000000</GrossAmount>
+					<NetAmount>97.000000</NetAmount>
 					<PaymentDate>20140910</PaymentDate>
 				</Installment>
 				<Installment>
 					<InstallmentNumber>2</InstallmentNumber>
-					<GrossAmount>10000</GrossAmount>
-					<NetAmount>9700</NetAmount>
+					<GrossAmount>100.000000</GrossAmount>
+					<NetAmount>97.000000</NetAmount>
 					<PaymentDate>20141010</PaymentDate>
 				</Installment>
 			</Installments>
@@ -256,7 +256,7 @@
 			<Description>ALUGUEL POS</Description>
 			<Type>1</Type>
 			<PaymentDate>20140812</PaymentDate>
-			<Amount>8000</Amount>
+			<Amount>80.000000</Amount>
 		</Event>
 	</FinancialEvents>
 	<FinancialEventPayments>
@@ -268,7 +268,7 @@
 			<Description>AJUSTE MDR</Description>
 			<Type>1</Type>
 			<PaymentDate>20140810</PaymentDate>
-			<Amount>1000</Amount>
+			<Amount>10.000000</Amount>
 		</Event>
 	</FinancialEventPayments>
 	<Messages>
