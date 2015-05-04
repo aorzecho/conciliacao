@@ -66,20 +66,20 @@ Você pode fazer o download de um arquivo de conciliação com um exemplo mais c
             <NumberOfInstallments>2</NumberOfInstallments>
             <CaptureMethod>Ecommerce</CaptureMethod>
             <SerialNumber />
-            <CapturedAmount>24000</CapturedAmount>
-            <AuthorizedAmount>24000</AuthorizedAmount>
+            <CapturedAmount>240.000000</CapturedAmount>
+            <AuthorizedAmount>240.000000</AuthorizedAmount>
             <AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
             <Installments>
                 <Installment>
                     <InstallmentNumber>1</InstallmentNumber>
-                    <GrossAmount>2000</GrossAmount>
-                    <NetAmount>1956</NetAmount>
+                    <GrossAmount>20.000000</GrossAmount>
+                    <NetAmount>19.560000</NetAmount>
                     <PaymentDate>20150115</PaymentDate>
                 </Installment>
                 <Installment>
                     <InstallmentNumber>4</InstallmentNumber>
-                    <GrossAmount>2000</GrossAmount>
-                    <NetAmount>1956</NetAmount>
+                    <GrossAmount>20.000000</GrossAmount>
+                    <NetAmount>19.560000</NetAmount>
                     <PaymentDate>20150415</PaymentDate>
                 </Installment>
             </Installments>
@@ -98,12 +98,12 @@ Você pode fazer o download de um arquivo de conciliação com um exemplo mais c
             <Installments>
                 <Installment>
                     <InstallmentNumber>4</InstallmentNumber>
-                    <GrossAmount>10000</GrossAmount>
-                    <NetAmount>9780</NetAmount>
+                    <GrossAmount>100.000000</GrossAmount>
+                    <NetAmount>97.800000</NetAmount>
                     <PaymentDate>20141216</PaymentDate>
 					<Chargeback>
 				        <Id>132456</Id>
-					    <Amount>10000</Amount>
+					    <Amount>100.000000</Amount>
 					    <Date>20141216</Date>
 					    <PaymentDate>20141217</PaymentDate>
 				    </Chargeback>
@@ -117,7 +117,7 @@ Você pode fazer o download de um arquivo de conciliação com um exemplo mais c
 			<Description>ALUGUEL DE POS</Description>
 			<Type>1</Type>
 			<PaymentDate>20140503</PaymentDate>
-			<Amount>8000</Amount>
+			<Amount>80.000000</Amount>
 		</Event>
 	</FinancialEvents>
 	<FinancialEventPayments>
@@ -129,7 +129,7 @@ Você pode fazer o download de um arquivo de conciliação com um exemplo mais c
 			<Description>ALUGUEL DE POS</Description>
 			<Type>1</Type>
 			<PaymentDate>20140503</PaymentDate>
-			<Amount>8000</Amount>
+			<Amount>80.000000</Amount>
 		</Event>
 	</FinancialEventPayments>
     <Trailer>
@@ -161,9 +161,9 @@ Você pode fazer o download de um arquivo de conciliação com um exemplo mais c
 | CardNumber | Alfa | 19 | Número do cartão (truncado) |
 | Brand | Num | 2 | Bandeira do cartão |
 | AuthorizationCode | Num | 6 | Código da autorização fornecido pelo emissor. |
-| AuthorizedAmount | Num | 20 | Valor autorizado |
+| AuthorizedAmount | Float | 20 | Valor autorizado |
 | AuthorizedCurrencyCode | Num | 4 | Código da moeda |
-| CapturedAmount | Num | 20 | Valor capturado |
+| CapturedAmount | Float | 20 | Valor capturado |
 | CaptureDateTime | Data/Hora | 14 | Data/Hora da captura (Formato: aaaammddHHmmss) |
 | SalePlanType | Alfa | 60 | Plano de venda |
 | ProductType | Alfa | 4 | Tipo do produto |
@@ -180,10 +180,10 @@ Você pode fazer o download de um arquivo de conciliação com um exemplo mais c
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
 | InstallmentNumber | Num | 4 | Número da parcela |
-| GrossAmount | Num | 20 | Valor bruto da parcela |
-| NetAmount | Num | 20 | Valor líquido da parcela |
+| GrossAmount | Float | 20 | Valor bruto da parcela |
+| NetAmount | Float | 20 | Valor líquido da parcela |
 | PaymentDate | Data | 8 | Data de pagamento da parcela (Formato: aaaammdd) |
-| AdvanceAmount | Num | 20 | Valor cobrado pela antecipação do recebível |
+| AdvanceAmount | Float | 20 | Valor cobrado pela antecipação do recebível |
 | OriginalPaymentDate | Data | 8 | Data original de pagamento da parcela (Formato: aaaammdd) |
 
 ### Nó Trailer
@@ -203,7 +203,7 @@ Nó filho de [Installment](#installment) que contém informações sobre o charg
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
 | Id | Num | 10 | Identificador do chargeback |
-| Amount | Num | 20 | Valor do chargeback |
+| Amount | Float | 20 | Valor do chargeback |
 | Date | Data | 8 | Data em que ocorreu o chargeback. (Formato: aaaammdd) |
 | PaymentDate | Data | 8 | Data em que o chargeback será descontado. (Formato: aaaammdd) |
 
@@ -214,7 +214,7 @@ Nó filho de [Installment](#installment) que contém informações sobre a reapr
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
 | Id | Num | 10 | Identificador da reapresentação do chargeback |
-| Amount | Num | 20 | Valor da reapresentação do chargeback |
+| Amount | Float | 20 | Valor da reapresentação do chargeback |
 | Date | Data | 8 | Data em que ocorreu a reapresentação do chargeback. (Formato: aaaammdd) |
 | PaymentDate | Data | 8 | Data em que a reapresentação o chargeback será creditada. (Formato: aaaammdd) |
 
@@ -240,7 +240,7 @@ Nó filho de [FinancialEvents](#financialevents) ou de [FinacialEventPayments](#
 | Description | Alfa | 60 | Descrição do evento |
 | Type | Num | 2 | Tipo do evento |
 | PaymentDate | Data | 8 | Data em que o evento será pago. (Formato: aaaammdd) |
-| Amount | Num | 20 | Valor do evento |
+| Amount | Float | 20 | Valor do evento |
 | BankId | Num | 3 | Código do banco |
 | BankBranch | Alfa | 6 | Agência bancária |
 | BankAccount | Alfa | 11 | Conta bancária |
@@ -298,10 +298,10 @@ Nó filho de [Installments](#installments) que contém informações referentes 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
 | InstallmentNumber | Num | 4 | Número da parcela |
-| GrossAmount | Num | 20 | Valor bruto da parcela |
-| NetAmount | Num | 20 | Valor líquido da parcela |
+| GrossAmount | Float | 20 | Valor bruto da parcela |
+| NetAmount | Float | 20 | Valor líquido da parcela |
 | PaymentDate | Data | 8 | Data de pagamento da parcela (Formato: aaaammdd) |
-| AdvanceAmount | Num | 20 | Valor cobrado pela antecipação do recebível |
+| AdvanceAmount | Float | 20 | Valor cobrado pela antecipação do recebível |
 | OriginalPaymentDate | Data | 8 | Data original de pagamento da parcela (Formato: aaaammdd) |
 | [ChargeBack](#chargeback) | Container | ## | Contém informações sobre o chargeback, como data do pagemento, Id do chargeback, data em que ocorreu o chargeback, etc. |
 | [ChargeBackRefund](#chargebackrefund) | Container | ## | Contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc. |
@@ -338,7 +338,7 @@ Nó filho de [Transaction](#transaction) que contém informações referentes ao
 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
-| RefundAmount | Num | 20 | Valor do cancelamento (pode ser igual ou maior que o valor capturado) |
+| RefundAmount | Float | 20 | Valor do cancelamento (pode ser igual ou maior que o valor capturado) |
 | RefundPaymentDate | Data | 8 | Data em que o cancelamento/estorno será descontado. (Formato: aaaammdd) |
 | RefundDate | Data | 8 | Data em que ocorreu o cancelamento. (Formato: aaaammdd) |
 
@@ -364,9 +364,9 @@ Nó filho de [FinancialTransactions](#financialtransactions) ou de [FinancialTra
 | CardNumber | Alfa | 19 | Número do cartão (truncado) |
 | Brand | Num | 2 | Bandeira do cartão |
 | AuthorizationCode | Num | 6 | Código da autorização fornecido pelo emissor. |
-| AuthorizedAmount | Num | 20 | Valor autorizado |
+| AuthorizedAmount | Float | 20 | Valor autorizado |
 | AuthorizedCurrencyCode | Num | 4 | Código da moeda |
-| CapturedAmount | Num | 20 | Valor capturado |
+| CapturedAmount | Float | 20 | Valor capturado |
 | CaptureDateTime | Data/Hora | 14 | Data/Hora da captura (Formato: aaaammddHHmmss) |
 | SalePlanType | Alfa | 60 | Plano de venda |
 | ProductType | Alfa | 4 | Tipo do produto |
