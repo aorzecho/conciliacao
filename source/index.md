@@ -66,8 +66,8 @@ Você pode fazer o download de um arquivo de conciliação com um exemplo mais c
             <NumberOfInstallments>2</NumberOfInstallments>
             <CaptureMethod>Ecommerce</CaptureMethod>
             <SerialNumber />
-            <CapturedAmount>2.400000</CapturedAmount>
-            <AuthorizedAmount>2.400000</AuthorizedAmount>
+            <CapturedAmount>240.000000</CapturedAmount>
+            <AuthorizedAmount>240.000000</AuthorizedAmount>
             <AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
             <Installments>
                 <Installment>
