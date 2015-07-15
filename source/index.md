@@ -51,6 +51,7 @@ Você pode fazer o download de um arquivo de conciliação com um exemplo mais c
         <MerchantName>Uma empresa de exemplo.</MerchantName>
         <MerchantTaxId>11.111.111/0001-24</MerchantTaxId>
         <LayoutVersion>1</LayoutVersion>
+		<ReferenceDate>20150607</ReferenceDate>
     </Header>
     <FinancialTransactions>
         <Transaction>
@@ -101,12 +102,12 @@ Você pode fazer o download de um arquivo de conciliação com um exemplo mais c
                     <GrossAmount>100.000000</GrossAmount>
                     <NetAmount>97.800000</NetAmount>
                     <PaymentDate>20141216</PaymentDate>
-					<Chargeback>
+					<ChargeBack>
 				        <Id>132456</Id>
 					    <Amount>100.000000</Amount>
 					    <Date>20141216</Date>
 					    <PaymentDate>20141217</PaymentDate>
-				    </Chargeback>
+				    </ChargeBack>
                 </Installment>
             </Installments>
         </Transaction>
@@ -150,6 +151,7 @@ Você pode fazer o download de um arquivo de conciliação com um exemplo mais c
 | MerchantTaxId | Alfa | 25 | CNPJ da loja |
 | LayoutVersion | Num | 3 | Versão do Layout do arquivo |
 | Field | Num | 26 | Código identificador do arquivo |
+| ReferenceDate |Date|8| Data a que se refere o arquivo|
 
 ### Nó Transaction
 
@@ -341,6 +343,7 @@ Nó filho de [Transaction](#transaction) que contém informações referentes ao
 | RefundAmount | Float | 20 | Valor do cancelamento (pode ser igual ou maior que o valor capturado) |
 | RefundPaymentDate | Data | 8 | Data em que o cancelamento/estorno será descontado. (Formato: aaaammdd) |
 | RefundDate | Data | 8 | Data em que ocorreu o cancelamento. (Formato: aaaammdd) |
+| RefundGrossAmount | Float | 20 | Valor bruto do cancelamento|
 
 ## Trailer
 
@@ -378,3 +381,43 @@ Nó filho de [FinancialTransactions](#financialtransactions) ou de [FinancialTra
 | BankAccount | Alfa | 11 | Conta bancária |
 | [Installments](#installments) | Container | ## | Contém as parcelas da transação. |
 | [Refund](#refund) | Container | ## | Contém informações referentes ao cancelamento, como data de desconto do cancelamento e valor total do cancelamento. |
+
+# Apêndice
+
+## CaptureMethod
+
+|Valor|Descrição|
+|-----|---------|
+|1|POS|
+|2|MICRO POS|
+|3|TEF|
+|4|ECOMMERCE|
+
+## Brand
+
+|Valor|Descrição|
+|-----|---------|
+|1|Visa|
+|2|MasterCard|
+
+## ProductType
+
+|Valor|Descrição|
+|-----|---------|
+|1|Debit|
+|2|Credit|
+
+## SalePlanType
+
+|Valor|Descrição|
+|-----|---------|
+|1|à vista lojista|
+|2|parcelado lojista|
+
+## Eventid
+
+|Valor|Descrição|
+|-----|---------|
+|22|PosRent (Aluguel de POS)|
+|23|InternalTransfer (Transferência Interna)|
+|27|FinancialAdjustment (Ajuste financeiro)|
