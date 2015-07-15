@@ -73,6 +73,7 @@
         <span class="nt">&lt;MerchantName&gt;</span>Uma empresa de exemplo.<span class="nt">&lt;/MerchantName&gt;</span>
         <span class="nt">&lt;MerchantTaxId&gt;</span>11.111.111/0001-24<span class="nt">&lt;/MerchantTaxId&gt;</span>
         <span class="nt">&lt;LayoutVersion&gt;</span>1<span class="nt">&lt;/LayoutVersion&gt;</span>
+        <span class="nt">&lt;ReferenceDate&gt;</span>20150607<span class="nt">&lt;/ReferenceDate&gt;</span>
     <span class="nt">&lt;/Header&gt;</span>
     <span class="nt">&lt;FinancialTransactions&gt;</span>
         <span class="nt">&lt;Transaction&gt;</span>
@@ -123,12 +124,12 @@
                     <span class="nt">&lt;GrossAmount&gt;</span>100.000000<span class="nt">&lt;/GrossAmount&gt;</span>
                     <span class="nt">&lt;NetAmount&gt;</span>97.800000<span class="nt">&lt;/NetAmount&gt;</span>
                     <span class="nt">&lt;PaymentDate&gt;</span>20141216<span class="nt">&lt;/PaymentDate&gt;</span>
-                    <span class="nt">&lt;Chargeback&gt;</span>
+                    <span class="nt">&lt;ChargeBack&gt;</span>
                         <span class="nt">&lt;Id&gt;</span>132456<span class="nt">&lt;/Id&gt;</span>
                         <span class="nt">&lt;Amount&gt;</span>100.000000<span class="nt">&lt;/Amount&gt;</span>
                         <span class="nt">&lt;Date&gt;</span>20141216<span class="nt">&lt;/Date&gt;</span>
                         <span class="nt">&lt;PaymentDate&gt;</span>20141217<span class="nt">&lt;/PaymentDate&gt;</span>
-                    <span class="nt">&lt;/Chargeback&gt;</span>
+                    <span class="nt">&lt;/ChargeBack&gt;</span>
                 <span class="nt">&lt;/Installment&gt;</span>
             <span class="nt">&lt;/Installments&gt;</span>
         <span class="nt">&lt;/Transaction&gt;</span>
@@ -205,6 +206,12 @@
 <td>Num</td>
 <td>26</td>
 <td>Código identificador do arquivo</td>
+</tr>
+<tr>
+<td>ReferenceDate</td>
+<td>Date</td>
+<td>8</td>
+<td>Data a que se refere o arquivo</td>
 </tr>
 </tbody></table>
 <h3 id='n-transaction'>Nó Transaction</h3>
@@ -824,6 +831,12 @@
 <td>8</td>
 <td>Data em que ocorreu o cancelamento. (Formato: aaaammdd)</td>
 </tr>
+<tr>
+<td>RefundGrossAmount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor bruto do cancelamento</td>
+</tr>
 </tbody></table>
 <h2 id='trailer'>Trailer</h2>
 <p>Nó filho de <a href="#conciliation">Conciliation</a> que contém os totalizadores do arquivo, como total de transações capturadas, total líquido de transações pagas, etc.</p>
@@ -985,6 +998,98 @@
 <td>Container</td>
 <td>##</td>
 <td>Contém informações referentes ao cancelamento, como data de desconto do cancelamento e valor total do cancelamento.</td>
+</tr>
+</tbody></table>
+<h1 id='apndice'>Apêndice</h1><h2 id='capturemethod'>CaptureMethod</h2>
+<table><thead>
+<tr>
+<th>Valor</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>1</td>
+<td>POS</td>
+</tr>
+<tr>
+<td>2</td>
+<td>MICRO POS</td>
+</tr>
+<tr>
+<td>3</td>
+<td>TEF</td>
+</tr>
+<tr>
+<td>4</td>
+<td>ECOMMERCE</td>
+</tr>
+</tbody></table>
+<h2 id='brand'>Brand</h2>
+<table><thead>
+<tr>
+<th>Valor</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>1</td>
+<td>Visa</td>
+</tr>
+<tr>
+<td>2</td>
+<td>MasterCard</td>
+</tr>
+</tbody></table>
+<h2 id='producttype'>ProductType</h2>
+<table><thead>
+<tr>
+<th>Valor</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>1</td>
+<td>Debit</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Credit</td>
+</tr>
+</tbody></table>
+<h2 id='saleplantype'>SalePlanType</h2>
+<table><thead>
+<tr>
+<th>Valor</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>1</td>
+<td>à vista lojista</td>
+</tr>
+<tr>
+<td>2</td>
+<td>parcelado lojista</td>
+</tr>
+</tbody></table>
+<h2 id='eventid'>Eventid</h2>
+<table><thead>
+<tr>
+<th>Valor</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>22</td>
+<td>PosRent (Aluguel de POS)</td>
+</tr>
+<tr>
+<td>23</td>
+<td>InternalTransfer (Transferência Interna)</td>
+</tr>
+<tr>
+<td>27</td>
+<td>FinancialAdjustment (Ajuste financeiro)</td>
 </tr>
 </tbody></table>
 
