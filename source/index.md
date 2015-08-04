@@ -6,7 +6,7 @@ language_tabs:
 
 search: true
 ---
-
+teste1
 # Conciliação Stone
 
 A Conciliação Stone é uma ferramenta que disponibiliza diariamente aos estabelecimentos, a demonstração das transações realizadas e suas respectivas informações financeiras, aluguel de POS, ocorridos em D-1. Esta ferramenta permite o acompanhamento desde a captura até o pagamento/desconto de cada uma das transações e lançamentos realizados.
