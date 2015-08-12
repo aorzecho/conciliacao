@@ -43,7 +43,7 @@
         <h1 id='conciliao-stone'>Conciliação Stone</h1>
 <p>A Conciliação Stone é uma ferramenta que disponibiliza diariamente aos estabelecimentos, a demonstração das transações realizadas e suas respectivas informações financeiras, aluguel de POS, ocorridos em D-1. Esta ferramenta permite o acompanhamento desde a captura até o pagamento/desconto de cada uma das transações e lançamentos realizados.</p>
 
-<p>Com a Conciliação Stone, o lojista consegue visualizar de forma bastante clara, o valor líquido e bruto de cada parcela, o valor líquido e bruto de cancelamento parcial e total, quais parcelas da transação foram antecipadas e qual foi o custo da antecipação de cada parcela, chargebacks a serem descontados, etc. </p>
+<p>Com a Conciliação Stone, o lojista consegue visualizar de forma bastante clara, o valor líquido e bruto de cada parcela, o valor líquido e bruto de cancelamento parcial e total, quais parcelas da transação foram antecipadas e qual foi o custo da antecipação de cada parcela, chargebacks a serem descontados, etc.</p>
 
 <p>Tudo isto num mesmo lugar, sem a necessidade de tratar vários arquivos com layouts diferentes. Com a Conciliação Stone, o cliente obtém o arquivo de conciliação diretamente conosco, de maneira segura, através de um Webservice que retorna o arquivo de conciliação.</p>
 <h1 id='o-servio-de-conciliao'>O serviço de conciliação</h1>
@@ -52,18 +52,775 @@
 <p>Esse arquivo contém todas as transações que foram capturadas no dia anterior à data de geração do arquivo - <em>D-1</em>, ou seja, todas as transações capturadas no dia anterior ao dia da geração do arquivo. <strong>É importante ressaltar que o arquivo contém apenas as transações que foram capturadas e não as que somente foram autorizadas, uma vez que esse tipo de transação não gera movimento financeiro</strong>.</p>
 
 <p>O arquivo adota o modelo Previsão-Liquidação, diferente do que é praticado no mercado. Isso quer dizer que no Arquivo de Conciliação da Stone, estão presentes informações sobre a previsão de pagamento das transações e dos ajustes (agenda); e informações sobre a liquidação das transações e dos ajustes (extrato). <strong>É importante ressaltar que em prol da maior transparência, as transações canceladas não são tratadas como ajustes</strong>.</p>
-<h2 id='obtendo-o-arquivo'>Obtendo o arquivo</h2><pre><code class="highlight plaintext">curl \
+<h2 id='obtendo-o-arquivo'>Obtendo o arquivo</h2>
+<ul>
+<li>layout v1</li>
+</ul>
+<pre><code class="highlight plaintext">curl \
 -H "Authorization: affiliation-key" \
 -H "Accept-Encoding: gzip" \
 "https://conciliation.stone.com.br/conciliation-file/yyyymmdd"
 </code></pre>
 
-<p>As requisições devem ser enviadas para o serviço de conciliação utilizando o método <strong>GET</strong> para o endpoint <code class="prettyprint">https://conciliation.stone.com.br/conciliation-file/{dataReferencia}</code>, onde <code class="prettyprint">{dataReferencia}</code> é a data em que as transações foram capturadas, no formato yyyymmdd.</p>
+<ul>
+<li>layout v2</li>
+</ul>
+<pre><code class="highlight plaintext">curl \
+-H "Authorization: affiliation-key" \
+-H "Accept-Encoding: gzip" \
+"https://conciliation.stone.com.br/conciliation-file/v2/yyyymmdd"
+</code></pre>
+
+<p>As requisições devem ser enviadas para o serviço de conciliação utilizando o método <strong>GET</strong> para o endpoint <code class="prettyprint">https://conciliation.stone.com.br/conciliation-file/{dataReferencia}</code> ou <code class="prettyprint">https://conciliation.stone.com.br/conciliation-file/v{numeroversao}/{dataReferencia}</code>, onde <code class="prettyprint">{dataReferencia}</code> é a data em que as transações foram capturadas, no formato yyyymmdd e {numeroversao} o número da versão do layout desejado.</p>
 
 <p>Por se tratar de informações sigilosas para a empresa, tanto a requisição quanto a resposta trafegam em uma camada segura criptografada e as requisições precisam, necessariamente, estar autenticadas. Essa autenticação consiste no envio de um campo de cabeçalho HTTP <code class="prettyprint">Authorization</code> contendo a chave de afiliação da loja <code class="prettyprint">AffiliationKey</code>.</p>
 
 <p>É possível, ainda, que o volume de operações e eventos seja relativamente grande. Para agilizar a transferência do arquivo, é possível solicitá-lo de forma compactada. Caso seja necessário que o arquivo esteja compactado, o sistema conciliador deve incluir o campo de cabeçalho HTTP <code class="prettyprint">Accept-Encoding: gzip</code> na requisição ao serviço.</p>
-<h3 id='arquivo-de-conciliao-de-exemplo'>Arquivo de conciliação de exemplo</h3>
+<h1 id='layout-v2'>Layout v2</h1><h3 id='header'>Header</h3>
+<p>Nó filho de Conciliation que contém as informações referentes à loja e ao arquivo, como identificação do lojista, data de geração do arquivo, etc.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>GenerationDateTime</td>
+<td>Data/Hora</td>
+<td>14</td>
+<td>Data/Hora de geração do arquivo (Formato: aaaammddHHmmss)</td>
+</tr>
+<tr>
+<td>StoneCode</td>
+<td>Num</td>
+<td>9</td>
+<td>Código identificador da loja</td>
+</tr>
+<tr>
+<td>LayoutVersion</td>
+<td>Num</td>
+<td>3</td>
+<td>Versão do Layout do arquivo</td>
+</tr>
+<tr>
+<td>FileId</td>
+<td>Num</td>
+<td>26</td>
+<td>Código identificador do arquivo</td>
+</tr>
+<tr>
+<td>ReferenceDate</td>
+<td>Date</td>
+<td>8</td>
+<td>Data a que se refere o arquivo</td>
+</tr>
+</tbody></table>
+<h3 id='financialtransactions'>FinancialTransactions</h3>
+<p>Nó filho de Conciliation, container de Transaction, que contém as transações capturadas e ou canceladas ocorridas no dia de referência do arquivo.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Transaction</td>
+<td>Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.</td>
+</tr>
+</tbody></table>
+<h3 id='transaction'>Transaction</h3>
+<p>Nó filho de FinancialTransactions ou de FinancialTransactionPayments que contém as informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Events</td>
+<td>Container</td>
+<td>##</td>
+<td>Contém contadores dos eventos da transação no dia de referência do arquivo.</td>
+</tr>
+<tr>
+<td>AcquirerTransactionKey</td>
+<td>Num</td>
+<td>14</td>
+<td>Identificador único da transação (NSU) gerado pela adquirente</td>
+</tr>
+<tr>
+<td>InitiatorTransactionKey</td>
+<td>Alfa</td>
+<td>128</td>
+<td>Código recebido pelo sistema cliente</td>
+</tr>
+<tr>
+<td>AuthorizationDateTime</td>
+<td>Data/Hora</td>
+<td>14</td>
+<td>Data/Hora da autorização (Formato: aaaammddHHmmss)</td>
+</tr>
+<tr>
+<td>CaptureLocalDateTime</td>
+<td>Data/Hora</td>
+<td>14</td>
+<td>Data/Hora da captura (Formato: aaaammddHHmmss) no horario local da adquirente</td>
+</tr>
+<tr>
+<td>AccountType</td>
+<td>Alfa</td>
+<td>4</td>
+<td>Tipo de conta utilizada na transação crédito, débito, etc&hellip;</td>
+</tr>
+<tr>
+<td>InstallmentType</td>
+<td>Alfa</td>
+<td>60</td>
+<td>Tipo de parcelamento utilizado na transação lojista/emissor</td>
+</tr>
+<tr>
+<td>NumberOfInstallments</td>
+<td>Num</td>
+<td>4</td>
+<td>Número de parcelas</td>
+</tr>
+<tr>
+<td>AuthorizedAmount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor autorizado</td>
+</tr>
+<tr>
+<td>CapturedAmount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor capturado</td>
+</tr>
+<tr>
+<td>CanceledAmount</td>
+<td>Float</td>
+<td>20</td>
+<td>Total cancelado</td>
+</tr>
+<tr>
+<td>AuthorizationCurrencyCode</td>
+<td>Num</td>
+<td>4</td>
+<td>Código da moeda</td>
+</tr>
+<tr>
+<td>IssuerAuthorizationCode</td>
+<td>Num</td>
+<td>6</td>
+<td>Código da autorização fornecido pelo emissor.</td>
+</tr>
+<tr>
+<td>BrandId</td>
+<td>Num</td>
+<td>2</td>
+<td>Identificador da bandeira do cartão</td>
+</tr>
+<tr>
+<td>CardNumber</td>
+<td>Alfa</td>
+<td>19</td>
+<td>Número do cartão (truncado)</td>
+</tr>
+<tr>
+<td>Poi</td>
+<td>Container</td>
+<td>##</td>
+<td>Contém dados do Ponto de Interação (terminal) que realizou a transação</td>
+</tr>
+<tr>
+<td>Cancellations</td>
+<td>Container</td>
+<td>##</td>
+<td>Contém informações referentes aos cancelamentos, como data de desconto do cancelamento e valor total do cancelamento.</td>
+</tr>
+<tr>
+<td>Installments</td>
+<td>Container</td>
+<td>##</td>
+<td>Contém as parcelas da transação.</td>
+</tr>
+</tbody></table>
+<h3 id='events'>Events</h3>
+<p>Nó filho de Transaction, contém contadores dos eventos de uma transação no dia de referência do arquivo.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>CancellationCharges</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de descontos de cancelamento</td>
+</tr>
+<tr>
+<td>Cancellations</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de cancelamentos</td>
+</tr>
+<tr>
+<td>Captures</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de capturas</td>
+</tr>
+<tr>
+<td>ChargebackRefunds</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de estornos de chargeback</td>
+</tr>
+<tr>
+<td>Chargebacks</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de chargebacks</td>
+</tr>
+<tr>
+<td>Payments</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de pagamentos</td>
+</tr>
+</tbody></table>
+<h3 id='poi'>Poi</h3>
+<p>Contém dados do Ponto de Interação (terminal) que realizou a transação.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>PoiType</td>
+<td>Num</td>
+<td>4</td>
+<td>Tipo do ponto de interação (e-commerce, pos, mobile, etc).</td>
+</tr>
+<tr>
+<td>SerialNumber</td>
+<td>Num</td>
+<td>32</td>
+<td>Número de série do terminal, se existir</td>
+</tr>
+</tbody></table>
+<h3 id='cancellations'>Cancellations</h3>
+<p>Contém uma lista de cancelamentos</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Cancellation</td>
+<td>Container</td>
+<td>##</td>
+<td>Representa um cancelamento de uma transação</td>
+</tr>
+</tbody></table>
+<h3 id='cancellation'>Cancellation</h3>
+<p>Representa um cancelamento de uma transação.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>OperationKey</td>
+<td>Alfa</td>
+<td>32</td>
+<td>identificador único da operação de cancelamento</td>
+</tr>
+<tr>
+<td>CancellationDateTime</td>
+<td>Data/Hora</td>
+<td>14</td>
+<td>Data hora do cancelamento (Formato: aaaammddHHmmss)</td>
+</tr>
+<tr>
+<td>ReturnedAmount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor revertido e devolvido ao portador do cartão</td>
+</tr>
+<tr>
+<td>Billing</td>
+<td>Collection</td>
+<td>##</td>
+<td>Lista de cobranças relativa ao cancelamento</td>
+</tr>
+</tbody></table>
+<h3 id='billing'>Billing</h3>
+<p>Cobrança relativa ao cancelamento.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>ChargedAmount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor de desconto do cancelamento (descontado do lojista)</td>
+</tr>
+<tr>
+<td>PrevisionChargeDate</td>
+<td>Data/Hora</td>
+<td>8</td>
+<td>Data prevista para cobrança (aparece quando o elemento de cobrança está sob o nó de agenda [FinancialTransactions]) (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>ChargeDate</td>
+<td>Data/Hora</td>
+<td>8</td>
+<td>Data de cobrança (aparece no nó [FinancialTransactionsAccounts]) (Formato: aaaammdd)</td>
+</tr>
+</tbody></table>
+<h3 id='installments'>Installments</h3>
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Installment</td>
+<td>Container</td>
+<td>##</td>
+<td>Representa uma parcela de uma transação.</td>
+</tr>
+</tbody></table>
+<h2 id='installment'>Installment</h2>
+<p>Representa uma parcela de uma transação.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>InstallmentNumber</td>
+<td>Num</td>
+<td>2</td>
+<td>Número da parcela</td>
+</tr>
+<tr>
+<td>GrossAmount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor bruto da parcela</td>
+</tr>
+<tr>
+<td>NetAmount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor liquido da parcela</td>
+</tr>
+<tr>
+<td>PaymentDate</td>
+<td>Data/Hora</td>
+<td>8</td>
+<td>Data de pagemento da parcela. (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>PrevisionPaymentDate</td>
+<td>Data/Hora</td>
+<td>8</td>
+<td>Previsão da data de pagamento (aparece quando o elemento de cobrança está sob o nó de agenda [FinancialTransactions]) (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>AdvanceRateAmount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor cobrado pela antecipação de recebível</td>
+</tr>
+<tr>
+<td>AdvancedReceivableOriginalPaymentDate</td>
+<td>Data/Hora</td>
+<td>8</td>
+<td>Data original de pagamento do recebível adiantado</td>
+</tr>
+<tr>
+<td>Chargeback</td>
+<td>Container</td>
+<td>##</td>
+<td>Contém chargebacks relativos a parcela</td>
+</tr>
+<tr>
+<td>ChargebackRefund</td>
+<td>Container</td>
+<td>##</td>
+<td>Contém estornos de chargeback relativos a parcela</td>
+</tr>
+<tr>
+<td>PaymentId</td>
+<td>Num</td>
+<td>9</td>
+<td>Referência do elemento de pagamento ([Payments]) no qual a liquidação dessa parcela foi incluida</td>
+</tr>
+</tbody></table>
+<h3 id='chargeback'>Chargeback</h3>
+<p>Nó filho de [Installment] que contém informações sobre o chargeback, como data de desconto, Id do chargeback, data em que ocorreu o chargeback, etc.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Id</td>
+<td>Num</td>
+<td>10</td>
+<td>Identificador do chargeback</td>
+</tr>
+<tr>
+<td>Amount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor do chargeback</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que ocorreu o chargeback. (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>ChargeDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que o chargeback será descontado. (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>ReasonCode</td>
+<td>Num</td>
+<td>8</td>
+<td>Código de motivo do chargeback informado pelo banco emissor</td>
+</tr>
+</tbody></table>
+<h3 id='chargebackrefund'>ChargebackRefund</h3>
+<p>Nó filho de [Installment] que contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Id</td>
+<td>Num</td>
+<td>10</td>
+<td>Identificador da reapresentação do chargeback</td>
+</tr>
+<tr>
+<td>Amount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor da reapresentação do chargeback</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que ocorreu a reapresentação do chargeback. (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>PaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que a reapresentação o chargeback será creditada. (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>ReasonCode</td>
+<td>Num</td>
+<td>8</td>
+<td>Código de motivo do chargeback informado pelo banco emissor</td>
+</tr>
+</tbody></table>
+<h3 id='financialevents'>FinancialEvents</h3>
+<p>Nó filho de Conciliation, previsão de eventos financeiros lançados no dia de referência do arquivo (ajustes financeiros, aluguel de pos, etc&hellip;).</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Event</td>
+<td>Contém informações sobre o evento ocorrido</td>
+</tr>
+</tbody></table>
+<h3 id='event'>Event</h3>
+<p>Nó filho de [FinancialEvents] ou de [FinacialEventPayments], descreve os detalhes do evento ocorrido.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>EventId</td>
+<td>Num</td>
+<td>10</td>
+<td>Código identificador do evento</td>
+</tr>
+<tr>
+<td>PaymentId</td>
+<td>Num</td>
+<td>9</td>
+<td>Referência do elemento de pagamento ([Payments]) no qual a liquidação dessa parcela foi incluida, aparece no nó [FinacialEventPayments]</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>Alfa</td>
+<td>60</td>
+<td>Descrição do evento</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>Num</td>
+<td>2</td>
+<td>Tipo do evento</td>
+</tr>
+<tr>
+<td>PaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Data em que o evento será pago. (Formato: aaaammdd)</td>
+</tr>
+<tr>
+<td>PrevisionPaymentDate</td>
+<td>Data</td>
+<td>8</td>
+<td>Previsão da data de cobrança (aparece sob o nó FinancialEvents)</td>
+</tr>
+<tr>
+<td>Amount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor do evento</td>
+</tr>
+</tbody></table>
+<h3 id='financialtransactionsaccounts'>FinancialTransactionsAccounts</h3>
+<p>Nó filho de Conciliation, container de Transaction, que contém as transações pagas ou descontadas no dia referência do arquivo.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Transaction</td>
+<td>Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.</td>
+</tr>
+</tbody></table>
+<h3 id='financialeventaccounts'>FinancialEventAccounts</h3>
+<p>Nó filho de Conciliation, eventos financeiros pagos ou descontados no dia de referência do arquivo (ajustes financeiros, aluguel de pos, etc&hellip;).</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Event</td>
+<td>Contém informações sobre o evento ocorrido</td>
+</tr>
+</tbody></table>
+<h3 id='payments'>Payments</h3>
+<p>Nó filho de Conciliation, contém informações dos pagamentos efetuados relativos as transações e eventos financeiros do arquivo.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Payment</td>
+<td>Pagamento efetuado para o lojista.</td>
+</tr>
+</tbody></table>
+<h3 id='payment'>Payment</h3>
+<p>Nó filho de Payments, representa um pagamento efetuado para o lojista.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Id</td>
+<td>Num</td>
+<td>9</td>
+<td>Identificador do pagamento.</td>
+</tr>
+<tr>
+<td>TotalAmount</td>
+<td>Float</td>
+<td>20</td>
+<td>Valor total depositado na conta do lojista.</td>
+</tr>
+<tr>
+<td>FavoredBankAccount</td>
+<td>Container</td>
+<td>##</td>
+<td>Informações bancarias da conta favorecida pelo pagamento</td>
+</tr>
+</tbody></table>
+<h3 id='favoredbankaccount'>FavoredBankAccount</h3>
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>BankCode</td>
+<td>Num</td>
+<td>4</td>
+<td>Código do banco favorecido</td>
+</tr>
+<tr>
+<td>BankBranch</td>
+<td>Alfa</td>
+<td>10</td>
+<td>Número da agencia favorecida</td>
+</tr>
+<tr>
+<td>BankAccountNumber</td>
+<td>Num</td>
+<td>12</td>
+<td>Número da conta favorecida</td>
+</tr>
+</tbody></table>
+<h3 id='trailer'>Trailer</h3>
+<p>Contadores e totalizadores do arquivo.</p>
+
+<table><thead>
+<tr>
+<th>Elemento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Descrição</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>CapturedTransactionsQuantity</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de transações capturadas</td>
+</tr>
+<tr>
+<td>CanceledTransactionsQuantity</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de transações canceladas</td>
+</tr>
+<tr>
+<td>PaidInstallmentsQuantity</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de transações pagas</td>
+</tr>
+<tr>
+<td>ChargedCancellationsQuantity</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de cancelamentos descontados</td>
+</tr>
+<tr>
+<td>ChargebacksQuantity</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de chargebacks</td>
+</tr>
+<tr>
+<td>ChargebacksRefundQuantity</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de estornos de chargeback</td>
+</tr>
+<tr>
+<td>ChargedChargebacksQuantity</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de chargebacks descontados</td>
+</tr>
+<tr>
+<td>PaidChargebacksRefundQuantity</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de estornos de chargebacks pagos</td>
+</tr>
+<tr>
+<td>PaidEventsQuantity</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de eventos financaeiros pagos</td>
+</tr>
+<tr>
+<td>ChargedEventsQuantity</td>
+<td>Num</td>
+<td>9</td>
+<td>Número de eventos financaeiros descontados</td>
+</tr>
+</tbody></table>
+<h1 id='layout-v1'>Layout v1</h1><h3 id='arquivo-de-conciliao-de-exemplo'>Arquivo de conciliação de exemplo</h3>
 <p>Você pode fazer o download de um arquivo de conciliação com um exemplo mais completo através do seguinte link: <a href="attachment/Stone.123456789.20141103.xml">Stone.123456789.20141103.xml</a></p>
 <pre><code class="highlight xml"><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
 <span class="nt">&lt;Conciliation&gt;</span>
@@ -412,7 +1169,7 @@
 <td>Quantidade total de transações pagas</td>
 </tr>
 </tbody></table>
-<h1 id='tabela-de-referncia-dos-elementos'>Tabela de referência dos elementos</h1><h2 id='chargeback'>ChargeBack</h2>
+<h2 id='tabela-de-referncia-dos-elementos'>Tabela de referência dos elementos</h2><h3 id='chargeback'>ChargeBack</h3>
 <p>Nó filho de <a href="#installment">Installment</a> que contém informações sobre o chargeback, como data do pagemento, Id do chargeback, data em que ocorreu o chargeback, etc.</p>
 
 <table><thead>
@@ -448,7 +1205,7 @@
 <td>Data em que o chargeback será descontado. (Formato: aaaammdd)</td>
 </tr>
 </tbody></table>
-<h2 id='chargebackrefund'>ChargeBackRefund</h2>
+<h3 id='chargebackrefund'>ChargeBackRefund</h3>
 <p>Nó filho de <a href="#installment">Installment</a> que contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.</p>
 
 <table><thead>
@@ -484,7 +1241,7 @@
 <td>Data em que a reapresentação o chargeback será creditada. (Formato: aaaammdd)</td>
 </tr>
 </tbody></table>
-<h2 id='conciliation'>Conciliation</h2>
+<h3 id='conciliation'>Conciliation</h3>
 <table><thead>
 <tr>
 <th>Elemento</th>
@@ -520,7 +1277,7 @@
 <td>Contém os totalizadores do arquivo, como total de transações capturadas, total líquido de transações pagas, etc.</td>
 </tr>
 </tbody></table>
-<h2 id='event'>Event</h2>
+<h3 id='event'>Event</h3>
 <p>Nó filho de <a href="#financialevents">FinancialEvents</a> ou de <a href="#finacialeventpayments">FinacialEventPayments</a>, descreve os detalhes do evento ocorrido.</p>
 
 <table><thead>
@@ -580,7 +1337,7 @@
 <td>Conta bancária</td>
 </tr>
 </tbody></table>
-<h2 id='financialevents'>FinancialEvents</h2>
+<h3 id='financialevents'>FinancialEvents</h3>
 <p>Nó filho de <a href="#conciliation">Conciliation</a> que contém os eventos que ocorreram no dia, como (Ajuste MDR, aluguel de POS, etc)</p>
 
 <table><thead>
@@ -594,7 +1351,7 @@
 <td>Contém informações sobre o evento ocorrido</td>
 </tr>
 </tbody></table>
-<h2 id='finacialeventpayments'>FinacialEventPayments</h2>
+<h3 id='finacialeventpayments'>FinacialEventPayments</h3>
 <p>Nó filho de <a href="#conciliation">Conciliation</a> que contém os eventos que foram descontos ou creditados no dia, como (Ajuste MDR, aluguel de POS, etc).</p>
 
 <table><thead>
@@ -608,7 +1365,7 @@
 <td>Contém informações sobre o evento ocorrido</td>
 </tr>
 </tbody></table>
-<h2 id='financialtransactions'>FinancialTransactions</h2>
+<h3 id='financialtransactions'>FinancialTransactions</h3>
 <p>Nó filho de <a href="#conciliation">Conciliation</a> que contém as transações capturadas no dia, inclusive as transações que foram capturadas e canceladas no mesmo dia.</p>
 
 <table><thead>
@@ -622,7 +1379,7 @@
 <td>Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.</td>
 </tr>
 </tbody></table>
-<h2 id='financialtransactionpayments'>FinancialTransactionPayments</h2>
+<h3 id='financialtransactionpayments'>FinancialTransactionPayments</h3>
 <p>Nó filho de <a href="#conciliation">Conciliation</a> que contém as transações que foram pagas no dia. Contém também os descontos, referentes à cancelamentos, realizados no dia.</p>
 
 <table><thead>
@@ -636,7 +1393,7 @@
 <td>Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.</td>
 </tr>
 </tbody></table>
-<h2 id='header'>Header</h2>
+<h3 id='header'>Header</h3>
 <p>Nó filho de <a href="#conciliation">Conciliation</a> que contém as informações referentes à loja e ao arquivo, como razão social, CNPJ, data de geração do arquivo, etc.</p>
 
 <table><thead>
@@ -684,7 +1441,7 @@
 <td>Código identificador do arquivo</td>
 </tr>
 </tbody></table>
-<h2 id='installment'>Installment</h2>
+<h3 id='installment'>Installment</h3>
 <p>Nó filho de <a href="#installments">Installments</a> que contém informações referentes a uma parcela específica, como valor bruto e valor líquido, número da parcela etc.</p>
 
 <table><thead>
@@ -744,7 +1501,7 @@
 <td>Contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.</td>
 </tr>
 </tbody></table>
-<h2 id='installments'>Installments</h2>
+<h3 id='installments'>Installments</h3>
 <p>Nó filho de <a href="#transaction">Transaction</a> que contém as parcelas da transação.</p>
 
 <table><thead>
@@ -758,7 +1515,7 @@
 <td>Contém informações referentes a uma parcela específica, como valor bruto e valor líquido, número da parcela etc.</td>
 </tr>
 </tbody></table>
-<h2 id='message'>Message</h2>
+<h3 id='message'>Message</h3>
 <p>Nó filho de <a href="#messages">Messages</a> que contém as observações referentes às operações do dia.</p>
 
 <table><thead>
@@ -802,7 +1559,7 @@
 <td>Contém a informação referente à observação referente às operações do dia.</td>
 </tr>
 </tbody></table>
-<h2 id='refund'>Refund</h2>
+<h3 id='refund'>Refund</h3>
 <p>Nó filho de <a href="#transaction">Transaction</a> que contém informações referentes ao cancelamento, como data de desconto do cancelamento e valor total do cancelamento.</p>
 
 <table><thead>
@@ -838,7 +1595,7 @@
 <td>Valor bruto do cancelamento</td>
 </tr>
 </tbody></table>
-<h2 id='trailer'>Trailer</h2>
+<h3 id='trailer'>Trailer</h3>
 <p>Nó filho de <a href="#conciliation">Conciliation</a> que contém os totalizadores do arquivo, como total de transações capturadas, total líquido de transações pagas, etc.</p>
 
 <table><thead>
@@ -868,7 +1625,7 @@
 <td>Quantidade total de transações pagas</td>
 </tr>
 </tbody></table>
-<h2 id='transaction'>Transaction</h2>
+<h3 id='transaction'>Transaction</h3>
 <p>Nó filho de <a href="#financialtransactions">FinancialTransactions</a> ou de <a href="#financialtransactionpayments">FinancialTransactionPayments</a> que contém as informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.</p>
 
 <table><thead>
@@ -1000,7 +1757,7 @@
 <td>Contém informações referentes ao cancelamento, como data de desconto do cancelamento e valor total do cancelamento.</td>
 </tr>
 </tbody></table>
-<h1 id='apndice'>Apêndice</h1><h2 id='capturemethod'>CaptureMethod</h2>
+<h2 id='apndice'>Apêndice</h2><h3 id='capturemethod'>CaptureMethod</h3>
 <table><thead>
 <tr>
 <th>Valor</th>
@@ -1024,7 +1781,7 @@
 <td>ECOMMERCE</td>
 </tr>
 </tbody></table>
-<h2 id='brand'>Brand</h2>
+<h3 id='brand'>Brand</h3>
 <table><thead>
 <tr>
 <th>Valor</th>
@@ -1040,7 +1797,7 @@
 <td>MasterCard</td>
 </tr>
 </tbody></table>
-<h2 id='producttype'>ProductType</h2>
+<h3 id='producttype'>ProductType</h3>
 <table><thead>
 <tr>
 <th>Valor</th>
@@ -1056,7 +1813,7 @@
 <td>Credit</td>
 </tr>
 </tbody></table>
-<h2 id='saleplantype'>SalePlanType</h2>
+<h3 id='saleplantype'>SalePlanType</h3>
 <table><thead>
 <tr>
 <th>Valor</th>
@@ -1072,7 +1829,7 @@
 <td>parcelado lojista</td>
 </tr>
 </tbody></table>
-<h2 id='eventid'>Eventid</h2>
+<h3 id='eventid'>Eventid</h3>
 <table><thead>
 <tr>
 <th>Valor</th>
