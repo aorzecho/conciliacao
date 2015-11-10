@@ -49,173 +49,6 @@ Por se tratar de informações sigilosas para a empresa, tanto a requisição qu
 
 É possível, ainda, que o volume de operações e eventos seja relativamente grande. Para agilizar a transferência do arquivo, é possível solicitá-lo de forma compactada. Caso seja necessário que o arquivo esteja compactado, o sistema conciliador deve incluir o campo de cabeçalho HTTP `Accept-Encoding: gzip` na requisição ao serviço.
 
-<!--
-# Layout V1
-
-> Nota:
-
->A versão 1 do arquivo de conciliação não será mais atualizada, o serviço ainda pode ser consumido mas encorajamos que adapte sua consulta à versão 2, já que as novas <em>features</em> serão aplicadas apenas ao Layout v2 .
-
-## O Arquivo
-### Conciliation
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| Header   | Container | ###### | Contém as informações do lojista e do arquivo |
-| FinancialTransactions | Container | ###### | Contém as transações que aconteceram com o lojista no dia requisitado |
-| FinancialEvents | Container | ###### | Contém os eventos financeiros lançados para o lojista no dia requisitado |
-| FinancialTransactionsPayments | Container | ###### | Contém as transações que foram pagas/cobradas ao lojista no dia requisitado |
-| FinancialEventPayments | Container | ###### | Contém os eventos que foram pagos/cobrados ao lojista no dia requisistado |
-| Trailer | Container | ###### | Contém os contadores do arquivo |
-
-### Header
-
-Nó filho de Conciliation que contém as informações referentes à loja e ao arquivo, como identificação do lojista, data de geração do arquivo, etc.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| GenerationDateTime | Datetime | 14 | Datetime de geração do arquivo (Formato: aaaammddHHmmss)|
-| StoneCode | Num | 9 | Código identificador da loja |
-| LayoutVersion | Num | 3 | Versão do Layout do arquivo |
-| FileId | Num | 26 | Código identificador do arquivo |
-| ReferenceDate |Date|8| Data a que se refere o arquivo|
-
-### FinancialTransactions
-
-Nó filho de Conciliation, container de Transaction, que contém as transações capturadas e ou canceladas ocorridas no dia de referência do arquivo.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| Transaction | Container | ###### |  Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc. |
-
-### Transaction
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| AuthorizationDateTime| Datetime | 14 | Datetime da autorização (Formato: aaaammddHHmmss) |
-| OrderReference | Alfa | 128 | Código recebido pelo sistema cliente |
-| StoneId | Num | 14 | Identificador único da transação (NSU) |
-| AuthorizationCode | Num | 6 | Código da autorização fornecido pelo emissor. |
-| CaptureDateTime | Datetime | 14 | Datetime da captura (Formato: aaaammddHHmmss) |
-| Brand | Num | 2 | Bandeira do cartão |
-| CardNumber | Alfa | 19 | Número do cartão (truncado) |
-| SalePlanType | Alfa | 60 | Plano de venda |
-| ProductType | Alfa | 4 | Tipo do produto |
-| NumberOfInstallments | Num | 4 | Número de parcelas |
-| CaptureMethod | Num | 4 | Meio de captura |
-| SerialNumber | Alfa | 50 | Número serial do POS (vazio caso o meio de captura seja ecommerce) |
-| CapturedAmount | Float | 20 | Valor capturado |
-| AuthorizedAmount | Float | 20 | Valor autorizado |
-| AuthorizedCurrencyCode | Num | 4 | Código da moeda |
-| Refund | Container | ###### | Elemento que representa um cancelamento dessa transação* |
-| Installments | Container | ###### | Contém as parcelas da transação. |
-
->\* Campo que só aparece se a transação tiver tido cancelamento
-
-### Refund
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| RefundGrossAmount | Float | 20 | Valor bruto do cancelamento |
-| RefundAmount | Float | 20 | Valor cobrado do lojista pelo cancelamento |
-| RefundPaymentDate | Date | 14 | Dia em que será/foi cobrado o cancelamento Formato:(aaaaMMdd)|
-| RefundDate | Date | 14 | Dia em que ocorreu o cancelamento |
-
-### Installments
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-|Installment| Container | ###### | Representa uma parcela de uma transação. |
-
-### <ir id = 'installment'>Installment</ir>
-
-Representa uma parcela de uma transação.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| InstallmentNumber | Num | 2 | Número da parcela |
-| GrossAmount | Float | 20 | Valor bruto da parcela |
-| NetAmount | Float | 20 | Valor liquido da parcela |
-| AdvanceRateAmount | Float | 20 | Valor cobrado pela antecipação de recebível* |
-| AdvancedReceivableOriginalPaymentDate | Datetime | 8 | Data original de pagamento do recebível adiantado* |
-| Chargeback | Container | ###### | Contém chargebacks relativos a parcela** |
-| ChargebackRefund | Container | ###### | Contém estornos de chargeback relativos a parcela\*** |
-|PaymentDate | Datetime | 8 | Dia em que a transação será/foi paga ao lojista  |
-| MdrNetAmount | Float | 20 | Valor líquido sem a taxa de antecipação \* |
-
-> \* Campo que aparece apenas se houve antecipação da parcela
->
-> \*\* Campo que aparece somente se houve chargeback da parcela
->
-> \*\*\* Campo que aparece apenas se houve reapresentação de chargeback
-
-### ChargeBack
-
-Nó filho de Installment que contém informações sobre o chargeback, como data do pagemento, Id do chargeback, data em que ocorreu o chargeback, etc.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| Id | Num | 10 | Identificador do chargeback |
-| Amount | Float | 20 | Valor do chargeback |
-| Date | Data | 8 | Data em que ocorreu o chargeback. (Formato: aaaammdd) |
-| PaymentDate | Data | 8 | Data em que o chargeback será descontado. (Formato: aaaammdd) |
-| ReasonCode | Num | 8 | Código do motivo do chargeback informado pelo banco emissor |
-
-### ChargeBackRefund
-
-Nó filho de Installment que contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| Id | Num | 10 | Identificador da reapresentação do chargeback |
-| Amount | Float | 20 | Valor da reapresentação do chargeback |
-| Date | Data | 8 | Data em que ocorreu a reapresentação do chargeback. (Formato: aaaammdd) |
-| PaymentDate | Data | 8 | Data em que a reapresentação o chargeback será creditada. (Formato: aaaammdd) |
-| ReasonCode | Num | 8 | Código do motivo do chargeback informado pelo banco emissor |
-
-### FinancialTransactionPayments
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| Transaction | Container | ###### |  Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc. |
-
-### Transaction
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| AuthorizationDateTime| Datetime | 14 | Datetime da autorização (Formato: aaaammddHHmmss) |
-| OrderReference | Alfa | 128 | Código recebido pelo sistema cliente |
-| StoneId | Num | 14 | Identificador único da transação (NSU) |
-| AuthorizationCode | Num | 6 | Código da autorização fornecido pelo emissor. |
-| CaptureDateTime | Datetime | 14 | Datetime da captura (Formato: aaaammddHHmmss) |
-| Brand | Num | 2 | Bandeira do cartão |
-| CardNumber | Alfa | 19 | Número do cartão (truncado) |
-| SalePlanType | Alfa | 60 | Plano de venda |
-| ProductType | Alfa | 4 | Tipo do produto |
-| NumberOfInstallments | Num | 4 | Número de parcelas |
-| CaptureMethod | Num | 4 | Meio de captura |
-| SerialNumber | Alfa | 50 | Número serial do POS (vazio caso o meio de captura seja ecommerce) |
-| CapturedAmount | Float | 20 | Valor capturado |
-| AuthorizedAmount | Float | 20 | Valor autorizado |
-| AuthorizedCurrencyCode | Num | 4 | Código da moeda |
-| BankId | Num | 4 | Código de identificação do banco do beneficiado |
-| BankBranch | Num | 4 | Agência Bancária do beneficiado |
-| BankAccount | Num | 12 | Conta bancária do beneficiado |  
-| Refund | Container | ###### | Elemento que representa um cancelamento dessa transação* |
-| Installments | Container | ###### | Contém as parcelas da transação. |
-
->\* Campo que só aparece se a transação tiver tido cancelamento
-
-### Installments
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-|Installment| Container | ###### | Representa uma parcela de uma transação. |
-
-### Installment
-
-Representa uma parcela de uma transação. Semelhante ao elemento [Installment](#installment) descrito acima -->
-
 # Layout V2
 
 Diferente do layout 1 onde a apresentação é dinâmica e é possível observar o ciclo de vida de uma transação coletando o arquivo em diferentes momentos,
@@ -224,108 +57,107 @@ por exemplo uma transação realizada no dia 24-08 e cancelada no dia 19-10
 
   + Pedido de arquivo para o dia 24-08-2015 (Layout 1):
 
-    ``` xml
-    <Conciliation>
-      <Header>
+```xml
+<Conciliation>
+    <Header>
         <GenerationDateTime>20151020150721</GenerationDateTime>
         <StoneCode>123456789</StoneCode>
         <LayoutVersion>1</LayoutVersion>
         <FileId>000111</FileId>
         <ReferenceDate>20150824</ReferenceDate>
-      </Header>
-      <FinancialTransactions>
+    </Header>
+    <FinancialTransactions>
         <Transaction>
-          <AuthorizationDateTime>20150824182825</AuthorizationDateTime>
-          <OrderReference>1157795</OrderReference>
-          <StoneId>33650014557171</StoneId>
-          <AuthorizationCode>022535</AuthorizationCode>
-          <CaptureDateTime>20150824152839</CaptureDateTime>
-          <Brand>1</Brand>
-          <CardNumber>123456******1122</CardNumber>
-          <SalePlanType>2</SalePlanType>
-          <ProductType>2</ProductType>
-          <NumberOfInstallments>2</NumberOfInstallments>
-          <SerialNumber/>
-          <CapturedAmount>130.620000</CapturedAmount>
-          <AuthorizedAmount>130.620000</AuthorizedAmount>
-          <AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
-          <Refund>
-            <RefundGrossAmount>130.620000</RefundGrossAmount>
-            <RefundAmount>127.628802</RefundAmount>
-            <RefundPaymentDate>20150923</RefundPaymentDate>
-            <RefundDate>20151019</RefundDate>
-          </Refund>
-          <Installments>
-            <Installment>
-              <InstallmentNumber>1</InstallmentNumber>
-              <GrossAmount>65.310000</GrossAmount>
-              <NetAmount>63.814401</NetAmount>
-              <PaymentDate>20150923</PaymentDate>
-            </Installment>
-            <Installment>
-              <InstallmentNumber>2</InstallmentNumber>
-              <GrossAmount>65.310000</GrossAmount>
-              <NetAmount>63.814401</NetAmount>
-              <PaymentDate>20151020</PaymentDate>
-            </Installment>
-          </Installments>
+            <AuthorizationDateTime>20150824182825</AuthorizationDateTime>
+            <OrderReference>1157795</OrderReference>
+            <StoneId>33650014557171</StoneId>
+            <AuthorizationCode>022535</AuthorizationCode>
+            <CaptureDateTime>20150824152839</CaptureDateTime>
+            <Brand>1</Brand>
+            <CardNumber>123456******1122</CardNumber>
+            <SalePlanType>2</SalePlanType>
+            <ProductType>2</ProductType>
+            <NumberOfInstallments>2</NumberOfInstallments>
+            <SerialNumber/>
+            <CapturedAmount>130.620000</CapturedAmount>
+            <AuthorizedAmount>130.620000</AuthorizedAmount>
+            <AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
+            <Refund>
+                <RefundGrossAmount>130.620000</RefundGrossAmount>
+                <RefundAmount>127.628802</RefundAmount>
+                <RefundPaymentDate>20150923</RefundPaymentDate>
+                <RefundDate>20151019</RefundDate>
+            </Refund>
+            <Installments>
+                <Installment>
+                    <InstallmentNumber>1</InstallmentNumber>
+                    <GrossAmount>65.310000</GrossAmount>
+                    <NetAmount>63.814401</NetAmount>
+                    <PaymentDate>20150923</PaymentDate>
+                </Installment>
+                <Installment>
+                    <InstallmentNumber>2</InstallmentNumber>
+                    <GrossAmount>65.310000</GrossAmount>
+                    <NetAmount>63.814401</NetAmount>
+                    <PaymentDate>20151020</PaymentDate>
+                </Installment>
+            </Installments>
         </Transaction>
         <Transaction>
-          ...
-    ```
+        ...
+```
 
   + Pedido do arquivo para o dia 19-10-2015 (Layout 1):
 
-    ```xml
-    <Conciliation>
-      <Header>
+```xml
+<Conciliation>
+    <Header>
         <GenerationDateTime>20151020150410</GenerationDateTime>
         <StoneCode>123456789</StoneCode>
         <LayoutVersion>1</LayoutVersion>
         <FileId>110011</FileId>
         <ReferenceDate>20151019</ReferenceDate>
-      </Header>
-      <FinancialTransactions>
+    </Header>
+    <FinancialTransactions>
         <Transaction>
-          <AuthorizationDateTime>20150824182825</AuthorizationDateTime>
-          <OrderReference>1157795</OrderReference>
-          <StoneId>33650014557171</StoneId>
-          <AuthorizationCode>022535</AuthorizationCode>
-          <CaptureDateTime>20150824152839</CaptureDateTime>
-          <Brand>1</Brand>
-          <CardNumber>123456******1122</CardNumber>
-          <SalePlanType>2</SalePlanType>
-          <ProductType>2</ProductType>
-          <NumberOfInstallments>2</NumberOfInstallments>
-          <SerialNumber/>
-          <CapturedAmount>130.620000</CapturedAmount>
-          <AuthorizedAmount>130.620000</AuthorizedAmount>
-          <AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
-          <Refund>
-            <RefundGrossAmount>130.620000</RefundGrossAmount>
-            <RefundAmount>127.628802</RefundAmount>
-            <RefundPaymentDate>20150923</RefundPaymentDate>
-            <RefundDate>20151019</RefundDate>
-          </Refund>
-          <Installments>
-            <Installment>
-              <InstallmentNumber>1</InstallmentNumber>
-              <GrossAmount>65.310000</GrossAmount>
-              <NetAmount>63.814401</NetAmount>
-              <PaymentDate>20150923</PaymentDate>
-            </Installment>
-            <Installment>
-              <InstallmentNumber>2</InstallmentNumber>
-              <GrossAmount>65.310000</GrossAmount>
-              <NetAmount>63.814401</NetAmount>
-              <PaymentDate>20151020</PaymentDate>
-            </Installment>
-          </Installments>
+            <AuthorizationDateTime>20150824182825</AuthorizationDateTime>
+            <OrderReference>1157795</OrderReference>
+            <StoneId>33650014557171</StoneId>
+            <AuthorizationCode>022535</AuthorizationCode>
+            <CaptureDateTime>20150824152839</CaptureDateTime>
+            <Brand>1</Brand>
+            <CardNumber>123456******1122</CardNumber>
+            <SalePlanType>2</SalePlanType>
+            <ProductType>2</ProductType>
+            <NumberOfInstallments>2</NumberOfInstallments>
+            <SerialNumber/>
+            <CapturedAmount>130.620000</CapturedAmount>
+            <AuthorizedAmount>130.620000</AuthorizedAmount>
+            <AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
+            <Refund>
+                <RefundGrossAmount>130.620000</RefundGrossAmount>
+                <RefundAmount>127.628802</RefundAmount>
+                <RefundPaymentDate>20150923</RefundPaymentDate>
+                <RefundDate>20151019</RefundDate>
+            </Refund>
+            <Installments>
+                <Installment>
+                    <InstallmentNumber>1</InstallmentNumber>
+                    <GrossAmount>65.310000</GrossAmount>
+                    <NetAmount>63.814401</NetAmount>
+                    <PaymentDate>20150923</PaymentDate>
+                </Installment>
+                <Installment>
+                    <InstallmentNumber>2</InstallmentNumber>
+                    <GrossAmount>65.310000</GrossAmount>
+                    <NetAmount>63.814401</NetAmount>
+                    <PaymentDate>20151020</PaymentDate>
+                </Installment>
+            </Installments>
         </Transaction>
         <Transaction>
-          ...
-
-    ```
+       ...
+```
 
 + A transação com o StoneId = 33650014557171, aparece no arquivo do dia 24-08 e no arquivo do dia 19-10, como a transação foi cancelada no dia 19-10, o arquivo do dia 19-10 e o arquivo do dia 24-08 apresentam o campo Refund já que o modelo é dinâmico
 
@@ -335,104 +167,104 @@ por exemplo uma transação realizada no dia 24-08 e cancelada no dia 19-10
 
 + Pedido de arquivo para o dia 24-08-2015 (Layout 2):
 
-  ```xml
-  <Conciliation>
+```xml
+<Conciliation>
     <Header>
-      <GenerationDateTime>20151013145131</GenerationDateTime>
-      <StoneCode>123456789</StoneCode>
-      <LayoutVersion>2</LayoutVersion>
-      <FileId>500921</FileId>
-      <ReferenceDate>20150824</ReferenceDate>
+        <GenerationDateTime>20151013145131</GenerationDateTime>
+        <StoneCode>123456789</StoneCode>
+        <LayoutVersion>2</LayoutVersion>
+        <FileId>500921</FileId>
+        <ReferenceDate>20150824</ReferenceDate>
     </Header>
     <FinancialTransactions>
-      <Transaction>
-        <Events>
-          <CancellationCharges>0</CancellationCharges>
-          <Cancellations>0</Cancellations>
-          <Captures>1</Captures>
-          <ChargebackRefunds>0</ChargebackRefunds>
-          <Chargebacks>0</Chargebacks>
-          <Payments>0</Payments>
-        </Events>
-        <AcquirerTransactionKey>33650014557171</AcquirerTransactionKey>
-        <InitiatorTransactionKey>1331635</InitiatorTransactionKey>
-        <AuthorizationDateTime>20150920030409</AuthorizationDateTime>
-        <CaptureLocalDateTime>20150920000415</CaptureLocalDateTime>
-        <AccountType>2</AccountType>
-        <InstallmentType>1</InstallmentType>
-        <NumberOfInstallments>10</NumberOfInstallments>
-        <AuthorizedAmount>130.620000</AuthorizedAmount>
-        <CapturedAmount>130.620000</CapturedAmount>
-        <AuthorizationCurrencyCode>986</AuthorizationCurrencyCode>
-        <IssuerAuthorizationCode>040947</IssuerAuthorizationCode>
-        <BrandId>1</BrandId>
-        <CardNumber>422061******2743</CardNumber>
-        <Poi>
-          <PoiType>4</PoiType>
-        </Poi>
-        <Installments>
-          <Installment>
-            <InstallmentNumber>1</InstallmentNumber>
-            <GrossAmount>65.310000</GrossAmount>
-            <NetAmount>63.814401</NetAmount>
-            <PrevisionPaymentDate>20150923</PrevisionPaymentDate>
-          </Installment>
-          <Installment>
-            <InstallmentNumber>2</InstallmentNumber>
-            <GrossAmount>65.310000</GrossAmount>
-            <NetAmount>63.814401</NetAmount>
-            <PrevisionPaymentDate>20151020</PrevisionPaymentDate>
-          </Installment>
-        </Installments>
-      </Transaction>
-      <Transaction>
-        ...
-  ```
+        <Transaction>
+            <Events>
+                <CancellationCharges>0</CancellationCharges>
+                <Cancellations>0</Cancellations>
+                <Captures>1</Captures>
+                <ChargebackRefunds>0</ChargebackRefunds>
+                <Chargebacks>0</Chargebacks>
+                <Payments>0</Payments>
+            </Events>
+            <AcquirerTransactionKey>33650014557171</AcquirerTransactionKey>
+            <InitiatorTransactionKey>1331635</InitiatorTransactionKey>
+            <AuthorizationDateTime>20150920030409</AuthorizationDateTime>
+            <CaptureLocalDateTime>20150920000415</CaptureLocalDateTime>
+            <AccountType>2</AccountType>
+            <InstallmentType>1</InstallmentType>
+            <NumberOfInstallments>10</NumberOfInstallments>
+            <AuthorizedAmount>130.620000</AuthorizedAmount>
+            <CapturedAmount>130.620000</CapturedAmount>
+            <AuthorizationCurrencyCode>986</AuthorizationCurrencyCode>
+            <IssuerAuthorizationCode>040947</IssuerAuthorizationCode>
+            <BrandId>1</BrandId>
+            <CardNumber>422061******2743</CardNumber>
+            <Poi>
+                <PoiType>4</PoiType>
+            </Poi>
+            <Installments>
+                <Installment>
+                    <InstallmentNumber>1</InstallmentNumber>
+                    <GrossAmount>65.310000</GrossAmount>
+                    <NetAmount>63.814401</NetAmount>
+                    <PrevisionPaymentDate>20150923</PrevisionPaymentDate>
+                </Installment>
+                <Installment>
+                    <InstallmentNumber>2</InstallmentNumber>
+                    <GrossAmount>65.310000</GrossAmount>
+                    <NetAmount>63.814401</NetAmount>
+                    <PrevisionPaymentDate>20151020</PrevisionPaymentDate>
+                </Installment>
+            </Installments>
+        </Transaction>
+        <Transaction>
+    ...
+```
 
 
 + Pedido do arquivo para o dia 19-10-2015 (Layout 2):
 
-  ```xml
-      <Conciliation>
-        <Header>
-          <GenerationDateTime>20151013145131</GenerationDateTime>
-          <StoneCode>123456789</StoneCode>
-          <LayoutVersion>2</LayoutVersion>
-          <FileId>500921</FileId>
-          <ReferenceDate>20151910</ReferenceDate>
-        </Header>
-        <FinancialTransactions>
-          <Transaction>
+```xml
+<Conciliation>
+    <Header>
+        <GenerationDateTime>20151013145131</GenerationDateTime>
+        <StoneCode>123456789</StoneCode>
+        <LayoutVersion>2</LayoutVersion>
+        <FileId>500921</FileId>
+        <ReferenceDate>20151910</ReferenceDate>
+    </Header>
+    <FinancialTransactions>
+        <Transaction>
             <Events>
-              <CancellationCharges>0</CancellationCharges>
-              <Cancellations>1</Cancellations>
-              <Captures>0</Captures>
-              <ChargebackRefunds>0</ChargebackRefunds>
-              <Chargebacks>0</Chargebacks>
-              <Payments>0</Payments>
+                <CancellationCharges>0</CancellationCharges>
+                <Cancellations>1</Cancellations>
+                <Captures>0</Captures>
+                <ChargebackRefunds>0</ChargebackRefunds>
+                <Chargebacks>0</Chargebacks>
+                <Payments>0</Payments>
             </Events>
             <AcquirerTransactionKey>33650014557171</AcquirerTransactionKey>
             <InitiatorTransactionKey>1157795</InitiatorTransactionKey>
             <AuthorizationDateTime>20150824155931</AuthorizationDateTime>
             <CaptureLocalDateTime>20150824125935</CaptureLocalDateTime>
             <Poi>
-              <PoiType>4</PoiType>
+                <PoiType>4</PoiType>
             </Poi>
             <Cancellations>
-              <Cancellation>
-                <OperationKey>3635000017434024</OperationKey>
-                <CancellationDateTime>20150910034340</CancellationDateTime>
-                <ReturnedAmount>130.620000</ReturnedAmount>
-                <Billing>
-                  <ChargedAmount>127.628802</ChargedAmount>
-                  <PrevisionChargeDate>20150911</PrevisionChargeDate>
-                </Billing>
-              </Cancellation>
+                <Cancellation>
+                    <OperationKey>3635000017434024</OperationKey>
+                    <CancellationDateTime>20150910034340</CancellationDateTime>
+                    <ReturnedAmount>130.620000</ReturnedAmount>
+                    <Billing>
+                        <ChargedAmount>127.628802</ChargedAmount>
+                        <PrevisionChargeDate>20150911</PrevisionChargeDate>
+                    </Billing>
+                </Cancellation>
             </Cancellations>
-          </Transaction>
-          <Transaction>
-            ...
-      ```
+        </Transaction>
+        <Transaction>
+    ...
+```
 
 + A transação com o StoneId = 33650014557171, aparece no arquivo do dia 24-08 e no arquivo do dia 19-10, como a transação foi cancelada no dia 19-10, o arquivo do dia 19-10 apresenta o campo Cancellations já que o modelo é estático
 
@@ -447,6 +279,7 @@ No dia em que essa transação for efetivamente paga ao lojista, um nó *Transac
 O Fluxo é semelhante para os Eventos financeiros, porém esses ficam sob *FinancialEvents* e *FinancialEventsAccounts*
 
 Portanto o arquivo de conciliação mostra tanto as transações pagas quanto as realizadas no dia referido
+
 ## O Arquivo
 
 ### Conciliation
@@ -530,14 +363,12 @@ Nó filho de Transaction, contém contadores dos eventos de uma transação no d
 
 Contém dados do Ponto de Interação (terminal) que realizou a transação.
 
-<div class="page-break" />
-
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
 | [PoiType](#CaptureMethod) | Num | 4 | Tipo do ponto de interação (e-commerce, pos, mobile, etc).|
 | SerialNumber | Num | 32 | Número de série do terminal, se existir |
 
-### <cs id="Cancellations">Cancellations</cs>
+### Cancellations
 
 Contém uma lista de cancelamentos
 
@@ -545,7 +376,7 @@ Contém uma lista de cancelamentos
 | -------- | ---- | ------- | --------- |
 | Cancellation | Container | ###### | Representa um cancelamento de uma transação |
 
-### <canc id="Cancellation">Cancellation</canc>
+### Cancellation
 
 Representa um cancelamento de uma transação.
 
@@ -556,8 +387,7 @@ Representa um cancelamento de uma transação.
 | ReturnedAmount | Float | 20 | Valor revertido e devolvido ao portador do cartão |
 | Billing | Collection | ###### | Lista de cobranças relativa ao cancelamento \* |
 
->\* Aparece apenas se a transação não tiver sido cancelada no mesmo dia da captura
-
+<aside class="notice">* Aparece apenas se a transação não tiver sido cancelada no mesmo dia da captura</aside>
 
 ### Billing
 
@@ -588,11 +418,10 @@ Representa uma parcela de uma transação.
 | Chargeback | Container | ###### | Contém chargebacks relativos a parcela** |
 | ChargebackRefund | Container | ###### | Contém estornos de chargeback relativos a parcela\*** |
 
-> ** Elemento que só aparece quando houve Chargeback
->
-> \*** Elemento que só aparece quando houve Chargeback e Reapresentação de Chargeback
+<aside class="notice">** Elemento que só aparece quando houve Chargeback</aside>
+<aside class="notice">\*** Elemento que só aparece quando houve Chargeback e Reapresentação de Chargeback</aside>
 
-### <c id="Chargeback">Chargeback</c>
+### Chargeback
 
 Nó filho de Installment que contém informações sobre o chargeback, como data de desconto, Id do chargeback, data em que ocorreu o chargeback, etc.
 
@@ -604,11 +433,9 @@ Nó filho de Installment que contém informações sobre o chargeback, como data
 | ChargeDate | Date | 8 | Data em que o chargeback será descontado. (Formato: aaaammdd) |
 | ReasonCode | Num | 8 | Código de motivo do chargeback informado pelo banco emissor |
 
-### <d id="ChargebackRef">ChargebackRefund</d>
+### ChargebackRefund
 
 Nó filho de Installment que contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.
-
-<div class="page-break" />
 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
@@ -626,7 +453,7 @@ Nó filho de Conciliation, previsão de eventos financeiros lançados no dia de 
 | -------- | --------- |
 | Event | Contém informações sobre o evento ocorrido |
 
-### <e id ="Event">Event</e>
+### Event
 
 Nó filho de FinancialEvents , descreve os detalhes do evento ocorrido.
 
@@ -642,8 +469,6 @@ Nó filho de FinancialEvents , descreve os detalhes do evento ocorrido.
 
 Nó filho de Conciliation, container de Transaction, que contém as transações pagas ou descontadas no dia referência do arquivo.
 
-<div class="page-break" />
-
 | Elemento | Descrição |
 | -------- | --------- |
 | Transaction | Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc. |
@@ -653,7 +478,6 @@ Nó filho de Conciliation, container de Transaction, que contém as transações
 Nó filho de FinancialTransactionPayments que contém as informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.
 
 [**Igual ao nó transaction de FinancialTransactions**](#Transaction)
-
 
 ### Events
 
@@ -668,6 +492,7 @@ Nó filho de Transaction, contém contadores dos eventos de uma transação no d
 Contém uma lista de cancelamentos
 
 [**Igual ao nó Cancellations descrito acima**](#Cancellations)
+
 ### Cancellation
 
 Representa um cancelamento de uma transação.
@@ -706,13 +531,10 @@ Representa uma parcela de uma transação.
 | ChargebackRefund | Container | ###### | Contém estornos de chargeback relativos a parcela\*** |
 | PaymentId | Num | 9 | Referência do elemento de pagamento (Payments) no qual a liquidação dessa parcela foi incluida |
 
-> \* Elementos que só aparecem quando houver antecipação
->
-> ** Elemento que só aparece quando houve Chargeback
->
-> \*** Elemento que só aparece quando houve Chargeback e Reapresentação de Chargeback
->
->  \*\*\*\* Aparece apenas nas parcelas posteriores à parcela que sofreu chargeback
+<aside class="notice">\* Elementos que só aparecem quando houver antecipação</aside>
+<aside class="notice">** Elemento que só aparece quando houve Chargeback</aside>
+<aside class="notice">\*** Elemento que só aparece quando houve Chargeback e Reapresentação de Chargeback</aside>
+<aside class="notice">\*\*\*\* Aparece apenas nas parcelas posteriores à parcela que sofreu chargeback</aside>
 
 ### Chargeback
 
@@ -735,6 +557,7 @@ Nó filho de Conciliation, eventos financeiros pagos ou descontados no dia de re
 | Event | Contém informações sobre o evento ocorrido |
 
 ### Event
+
 Nó filho de FinacialEventPayments ,descreve os detalhes do evento ocorrido.
 
 Nó filho de [FinancialEvents] ou de [FinacialEventPayments], descreve os detalhes do evento ocorrido.
@@ -795,223 +618,223 @@ Contadores e totalizadores do arquivo.
 
 ```xml
 <Conciliation>
-  <Header>
-    <GenerationDateTime>20151013145131</GenerationDateTime>
-    <StoneCode>123456789</StoneCode>
-    <LayoutVersion>2</LayoutVersion>
-    <FileId>020202</FileId>
-    <ReferenceDate>20150920</ReferenceDate>
-  </Header>
-  <FinancialTransactions>
-    <Transaction>
-      <Events>
-        <CancellationCharges>0</CancellationCharges>
-        <Cancellations>1</Cancellations>
-        <Captures>0</Captures>
-        <ChargebackRefunds>0</ChargebackRefunds>
-        <Chargebacks>0</Chargebacks>
-        <Payments>0</Payments>
-      </Events>
-      <AcquirerTransactionKey>12345678912356</AcquirerTransactionKey>
-      <InitiatorTransactionKey>1117737</InitiatorTransactionKey>
-      <AuthorizationDateTime>20150818155931</AuthorizationDateTime>
-      <CaptureLocalDateTime>20150818125935</CaptureLocalDateTime>
-      <Poi>
-        <PoiType>4</PoiType>
-      </Poi>
-      <Cancellations>
-        <Cancellation>
-          <OperationKey>3635000017434024</OperationKey>
-          <CancellationDateTime>20150920034340</CancellationDateTime>
-          <ReturnedAmount>20.000000</ReturnedAmount>
-          <Billing>
-            <ChargedAmount>19.602000</ChargedAmount>
-            <PrevisionChargeDate>20150921</PrevisionChargeDate>
-          </Billing>
-        </Cancellation>
-      </Cancellations>
-      <Installments>
-        <Installment>
-          <InstallmentNumber>1</InstallmentNumber>
-          <GrossAmount>20.000000</GrossAmount>
-          <NetAmount>19.389317</NetAmount>
-          <PrevisionPaymentDate>20150927</PrevisionPaymentDate>
-          <AdvanceRateAmount>0.212683</AdvanceRateAmount>
-          <AdvancedReceivableOriginalPaymentDate>20151017</AdvancedReceivableOriginalPaymentDate>
-        </Installment>
-      </Installments>
-    </Transaction>
-    <Transaction>
-      <Events>
-        <CancellationCharges>0</CancellationCharges>
-        <Cancellations>0</Cancellations>
-        <Captures>1</Captures>
-        <ChargebackRefunds>0</ChargebackRefunds>
-        <Chargebacks>0</Chargebacks>
-        <Payments>0</Payments>
-      </Events>
-      <AcquirerTransactionKey>12345678912345</AcquirerTransactionKey>
-      <InitiatorTransactionKey>1331632</InitiatorTransactionKey>
-      <AuthorizationDateTime>20150920030009</AuthorizationDateTime>
-      <CaptureLocalDateTime>20150920000010</CaptureLocalDateTime>
-      <AccountType>2</AccountType>
-      <InstallmentType>1</InstallmentType>
-      <NumberOfInstallments>1</NumberOfInstallments>
-      <AuthorizedAmount>50.000000</AuthorizedAmount>
-      <CapturedAmount>50.000000</CapturedAmount>
-      <AuthorizationCurrencyCode>986</AuthorizationCurrencyCode>
-      <IssuerAuthorizationCode>094736</IssuerAuthorizationCode>
-      <BrandId>2</BrandId>
-      <CardNumber>132456******1122</CardNumber>
-      <Poi>
-        <PoiType>4</PoiType>
-      </Poi>
-      <Installments>
-        <Installment>
-          <InstallmentNumber>1</InstallmentNumber>
-          <GrossAmount>50.000000</GrossAmount>
-          <NetAmount>49.005000</NetAmount>
-          <PrevisionPaymentDate>20151020</PrevisionPaymentDate>
-        </Installment>
-      </Installments>
-    </Transaction>
-    <Transaction>
-      <Events>
-        <CancellationCharges>0</CancellationCharges>
-        <Cancellations>1</Cancellations>
-        <Captures>1</Captures>
-        <ChargebackRefunds>0</ChargebackRefunds>
-        <Chargebacks>0</Chargebacks>
-        <Payments>0</Payments>
-      </Events>
-      <AcquirerTransactionKey>36350017433715</AcquirerTransactionKey>
-      <InitiatorTransactionKey>1331697</InitiatorTransactionKey>
-      <AuthorizationDateTime>20150920033610</AuthorizationDateTime>
-      <CaptureLocalDateTime>20150920003610</CaptureLocalDateTime>
-      <AccountType>2</AccountType>
-      <InstallmentType>1</InstallmentType>
-      <NumberOfInstallments>1</NumberOfInstallments>
-      <AuthorizedAmount>125.790000</AuthorizedAmount>
-      <CapturedAmount>125.790000</CapturedAmount>
-      <CanceledAmount>125.790000</CanceledAmount>
-      <AuthorizationCurrencyCode>986</AuthorizationCurrencyCode>
-      <IssuerAuthorizationCode>661137</IssuerAuthorizationCode>
-      <BrandId>1</BrandId>
-      <CardNumber>123456******1122</CardNumber>
-      <Poi>
-        <PoiType>4</PoiType>
-      </Poi>
-      <Cancellations>
-        <Cancellation>
-          <CancellationDateTime>20150920000000</CancellationDateTime>
-          <ReturnedAmount>125.790000</ReturnedAmount>
-        </Cancellation>
-      </Cancellations>
-      <Installments>
-        <Installment>
-          <InstallmentNumber>1</InstallmentNumber>
-          <GrossAmount>125.790000</GrossAmount>
-          <NetAmount />
-        </Installment>
-      </Installments>
-    </Transaction>
-  </FinancialTransactions>
-  <FinancialEvents>
-    <Event>
-      <EventId>29869413</EventId>
-      <Description>PosRent</Description>
-      <Type>-22</Type>
-      <PrevisionPaymentDate>20150923</PrevisionPaymentDate>
-      <Amount>-590.000000</Amount>
-    </Event>
-  </FinancialEvents>
-  <FinancialTransactionsAccounts>
-    <Transaction>
-      <Events>
-        <CancellationCharges>0</CancellationCharges>
-        <Cancellations>0</Cancellations>
-        <Captures>0</Captures>
-        <ChargebackRefunds>0</ChargebackRefunds>
-        <Chargebacks>0</Chargebacks>
-        <Payments>1</Payments>
-      </Events>
-      <AcquirerTransactionKey>31550012403598</AcquirerTransactionKey>
-      <InitiatorTransactionKey>ad50f27deee549b2</InitiatorTransactionKey>
-      <AuthorizationDateTime>20150803210946</AuthorizationDateTime>
-      <CaptureLocalDateTime>20150803182445</CaptureLocalDateTime>
-      <Poi>
-        <PoiType>4</PoiType>
-      </Poi>
-      <Installments>
-        <Installment>
-          <InstallmentNumber>1</InstallmentNumber>
-          <GrossAmount>123.440000</GrossAmount>
-          <NetAmount>120.354375</NetAmount>
-          <PaymentDate>20150920</PaymentDate>
-          <PaymentId>109963</PaymentId>
-        </Installment>
-      </Installments>
-    </Transaction>
-    <Transaction>
-      <Events>
-        <CancellationCharges>0</CancellationCharges>
-        <Cancellations>0</Cancellations>
-        <Captures>0</Captures>
-        <ChargebackRefunds>0</ChargebackRefunds>
-        <Chargebacks>0</Chargebacks>
-        <Payments>1</Payments>
-      </Events>
-      <AcquirerTransactionKey>31550012405762</AcquirerTransactionKey>
-      <InitiatorTransactionKey>f172e42e9aa7446e</InitiatorTransactionKey>
-      <AuthorizationDateTime>20150803212449</AuthorizationDateTime>
-      <CaptureLocalDateTime>20150803183941</CaptureLocalDateTime>
-      <Poi>
-        <PoiType>4</PoiType>
-      </Poi>
-      <Installments>
-        <Installment>
-          <InstallmentNumber>1</InstallmentNumber>
-          <GrossAmount>468.400000</GrossAmount>
-          <NetAmount>457.533120</NetAmount>
-          <PaymentDate>20150920</PaymentDate>
-          <PaymentId>109963</PaymentId>
-        </Installment>
-      </Installments>
-    </Transaction>
-  </FinancialTransactionsAccounts>
-  <FinancialEventAccounts>
-    <Event>
-      <EventId>38883564</EventId>
-      <PaymentId>109963</PaymentId>
-      <Description>FinancialAdjustment</Description>
-      <Type>-27</Type>
-      <PaymentDate>20150920</PaymentDate>
-      <Amount>900.890000</Amount>
-    </Event>
-  </FinancialEventAccounts>
-  <Payments>
-    <Payment>
-      <Id>109963</Id>
-      <TotalAmount>1478.77</TotalAmount>
-      <FavoredBankAccount>
-        <BankCode>1</BankCode>
-        <BankBranch>24111</BankBranch>
-        <BankAccountNumber>0123456</BankAccountNumber>
-      </FavoredBankAccount>
-    </Payment>
-  </Payments>
-  <Trailer>
-    <CapturedTransactionsQuantity>2</CapturedTransactionsQuantity>
-    <CanceledTransactionsQuantity>3</CanceledTransactionsQuantity>
-    <PaidInstallmentsQuantity>2</PaidInstallmentsQuantity>
-    <ChargedCancellationsQuantity>0</ChargedCancellationsQuantity>
-    <ChargebacksQuantity>0</ChargebacksQuantity>
-    <ChargebacksRefundQuantity>0</ChargebacksRefundQuantity>
-    <ChargedChargebacksQuantity>0</ChargedChargebacksQuantity>
-    <PaidChargebacksRefundQuantity>0</PaidChargebacksRefundQuantity>
-    <PaidEventsQuantity>1</PaidEventsQuantity>
-    <ChargedEventsQuantity>0</ChargedEventsQuantity>
-  </Trailer>
+    <Header>
+        <GenerationDateTime>20151013145131</GenerationDateTime>
+        <StoneCode>123456789</StoneCode>
+        <LayoutVersion>2</LayoutVersion>
+        <FileId>020202</FileId>
+        <ReferenceDate>20150920</ReferenceDate>
+    </Header>
+    <FinancialTransactions>
+        <Transaction>
+            <Events>
+                <CancellationCharges>0</CancellationCharges>
+                <Cancellations>1</Cancellations>
+                <Captures>0</Captures>
+                <ChargebackRefunds>0</ChargebackRefunds>
+                <Chargebacks>0</Chargebacks>
+                <Payments>0</Payments>
+            </Events>
+            <AcquirerTransactionKey>12345678912356</AcquirerTransactionKey>
+            <InitiatorTransactionKey>1117737</InitiatorTransactionKey>
+            <AuthorizationDateTime>20150818155931</AuthorizationDateTime>
+            <CaptureLocalDateTime>20150818125935</CaptureLocalDateTime>
+            <Poi>
+                <PoiType>4</PoiType>
+            </Poi>
+            <Cancellations>
+                <Cancellation>
+                    <OperationKey>3635000017434024</OperationKey>
+                    <CancellationDateTime>20150920034340</CancellationDateTime>
+                    <ReturnedAmount>20.000000</ReturnedAmount>
+                    <Billing>
+                        <ChargedAmount>19.602000</ChargedAmount>
+                        <PrevisionChargeDate>20150921</PrevisionChargeDate>
+                    </Billing>
+                </Cancellation>
+            </Cancellations>
+            <Installments>
+                <Installment>
+                    <InstallmentNumber>1</InstallmentNumber>
+                    <GrossAmount>20.000000</GrossAmount>
+                    <NetAmount>19.389317</NetAmount>
+                    <PrevisionPaymentDate>20150927</PrevisionPaymentDate>
+                    <AdvanceRateAmount>0.212683</AdvanceRateAmount>
+                    <AdvancedReceivableOriginalPaymentDate>20151017</AdvancedReceivableOriginalPaymentDate>
+                </Installment>
+            </Installments>
+        </Transaction>
+        <Transaction>
+            <Events>
+                <CancellationCharges>0</CancellationCharges>
+                <Cancellations>0</Cancellations>
+                <Captures>1</Captures>
+                <ChargebackRefunds>0</ChargebackRefunds>
+                <Chargebacks>0</Chargebacks>
+                <Payments>0</Payments>
+            </Events>
+            <AcquirerTransactionKey>12345678912345</AcquirerTransactionKey>
+            <InitiatorTransactionKey>1331632</InitiatorTransactionKey>
+            <AuthorizationDateTime>20150920030009</AuthorizationDateTime>
+            <CaptureLocalDateTime>20150920000010</CaptureLocalDateTime>
+            <AccountType>2</AccountType>
+            <InstallmentType>1</InstallmentType>
+            <NumberOfInstallments>1</NumberOfInstallments>
+            <AuthorizedAmount>50.000000</AuthorizedAmount>
+            <CapturedAmount>50.000000</CapturedAmount>
+            <AuthorizationCurrencyCode>986</AuthorizationCurrencyCode>
+            <IssuerAuthorizationCode>094736</IssuerAuthorizationCode>
+            <BrandId>2</BrandId>
+            <CardNumber>132456******1122</CardNumber>
+            <Poi>
+                <PoiType>4</PoiType>
+            </Poi>
+            <Installments>
+                <Installment>
+                    <InstallmentNumber>1</InstallmentNumber>
+                    <GrossAmount>50.000000</GrossAmount>
+                    <NetAmount>49.005000</NetAmount>
+                    <PrevisionPaymentDate>20151020</PrevisionPaymentDate>
+                </Installment>
+            </Installments>
+        </Transaction>
+        <Transaction>
+            <Events>
+                <CancellationCharges>0</CancellationCharges>
+                <Cancellations>1</Cancellations>
+                <Captures>1</Captures>
+                <ChargebackRefunds>0</ChargebackRefunds>
+                <Chargebacks>0</Chargebacks>
+                <Payments>0</Payments>
+            </Events>
+            <AcquirerTransactionKey>36350017433715</AcquirerTransactionKey>
+            <InitiatorTransactionKey>1331697</InitiatorTransactionKey>
+            <AuthorizationDateTime>20150920033610</AuthorizationDateTime>
+            <CaptureLocalDateTime>20150920003610</CaptureLocalDateTime>
+            <AccountType>2</AccountType>
+            <InstallmentType>1</InstallmentType>
+            <NumberOfInstallments>1</NumberOfInstallments>
+            <AuthorizedAmount>125.790000</AuthorizedAmount>
+            <CapturedAmount>125.790000</CapturedAmount>
+            <CanceledAmount>125.790000</CanceledAmount>
+            <AuthorizationCurrencyCode>986</AuthorizationCurrencyCode>
+            <IssuerAuthorizationCode>661137</IssuerAuthorizationCode>
+            <BrandId>1</BrandId>
+            <CardNumber>123456******1122</CardNumber>
+            <Poi>
+                <PoiType>4</PoiType>
+            </Poi>
+            <Cancellations>
+                <Cancellation>
+                    <CancellationDateTime>20150920000000</CancellationDateTime>
+                    <ReturnedAmount>125.790000</ReturnedAmount>
+                </Cancellation>
+            </Cancellations>
+            <Installments>
+                <Installment>
+                    <InstallmentNumber>1</InstallmentNumber>
+                    <GrossAmount>125.790000</GrossAmount>
+                    <NetAmount />
+                </Installment>
+            </Installments>
+        </Transaction>
+    </FinancialTransactions>
+    <FinancialEvents>
+        <Event>
+            <EventId>29869413</EventId>
+            <Description>PosRent</Description>
+            <Type>-22</Type>
+            <PrevisionPaymentDate>20150923</PrevisionPaymentDate>
+            <Amount>-590.000000</Amount>
+        </Event>
+    </FinancialEvents>
+    <FinancialTransactionsAccounts>
+        <Transaction>
+            <Events>
+                <CancellationCharges>0</CancellationCharges>
+                <Cancellations>0</Cancellations>
+                <Captures>0</Captures>
+                <ChargebackRefunds>0</ChargebackRefunds>
+                <Chargebacks>0</Chargebacks>
+                <Payments>1</Payments>
+            </Events>
+            <AcquirerTransactionKey>31550012403598</AcquirerTransactionKey>
+            <InitiatorTransactionKey>ad50f27deee549b2</InitiatorTransactionKey>
+            <AuthorizationDateTime>20150803210946</AuthorizationDateTime>
+            <CaptureLocalDateTime>20150803182445</CaptureLocalDateTime>
+            <Poi>
+                <PoiType>4</PoiType>
+            </Poi>
+            <Installments>
+                <Installment>
+                    <InstallmentNumber>1</InstallmentNumber>
+                    <GrossAmount>123.440000</GrossAmount>
+                    <NetAmount>120.354375</NetAmount>
+                    <PaymentDate>20150920</PaymentDate>
+                    <PaymentId>109963</PaymentId>
+                </Installment>
+            </Installments>
+        </Transaction>
+        <Transaction>
+            <Events>
+                <CancellationCharges>0</CancellationCharges>
+                <Cancellations>0</Cancellations>
+                <Captures>0</Captures>
+                <ChargebackRefunds>0</ChargebackRefunds>
+                <Chargebacks>0</Chargebacks>
+                <Payments>1</Payments>
+            </Events>
+            <AcquirerTransactionKey>31550012405762</AcquirerTransactionKey>
+            <InitiatorTransactionKey>f172e42e9aa7446e</InitiatorTransactionKey>
+            <AuthorizationDateTime>20150803212449</AuthorizationDateTime>
+            <CaptureLocalDateTime>20150803183941</CaptureLocalDateTime>
+            <Poi>
+                <PoiType>4</PoiType>
+            </Poi>
+            <Installments>
+                <Installment>
+                    <InstallmentNumber>1</InstallmentNumber>
+                    <GrossAmount>468.400000</GrossAmount>
+                    <NetAmount>457.533120</NetAmount>
+                    <PaymentDate>20150920</PaymentDate>
+                    <PaymentId>109963</PaymentId>
+                </Installment>
+            </Installments>
+        </Transaction>
+    </FinancialTransactionsAccounts>
+    <FinancialEventAccounts>
+        <Event>
+            <EventId>38883564</EventId>
+            <PaymentId>109963</PaymentId>
+            <Description>FinancialAdjustment</Description>
+            <Type>-27</Type>
+            <PaymentDate>20150920</PaymentDate>
+            <Amount>900.890000</Amount>
+        </Event>
+    </FinancialEventAccounts>
+    <Payments>
+        <Payment>
+            <Id>109963</Id>
+            <TotalAmount>1478.77</TotalAmount>
+            <FavoredBankAccount>
+                <BankCode>1</BankCode>
+                <BankBranch>24111</BankBranch>
+                <BankAccountNumber>0123456</BankAccountNumber>
+            </FavoredBankAccount>
+        </Payment>
+    </Payments>
+    <Trailer>
+        <CapturedTransactionsQuantity>2</CapturedTransactionsQuantity>
+        <CanceledTransactionsQuantity>3</CanceledTransactionsQuantity>
+        <PaidInstallmentsQuantity>2</PaidInstallmentsQuantity>
+        <ChargedCancellationsQuantity>0</ChargedCancellationsQuantity>
+        <ChargebacksQuantity>0</ChargebacksQuantity>
+        <ChargebacksRefundQuantity>0</ChargebacksRefundQuantity>
+        <ChargedChargebacksQuantity>0</ChargedChargebacksQuantity>
+        <PaidChargebacksRefundQuantity>0</PaidChargebacksRefundQuantity>
+        <PaidEventsQuantity>1</PaidEventsQuantity>
+        <ChargedEventsQuantity>0</ChargedEventsQuantity>
+    </Trailer>
 </Conciliation>
 ```
 
@@ -1028,23 +851,18 @@ Disponibilizamos 6 arquivos para o uso em testes, esses arquivos mostram o hist�
 | 55555555555555 | Captura -> Pagamento -> ChargeBack -> Pagamento -> ChargebackRefund -> Pagamento |
 | 66666666666666 | Captura -> Pagamento -> Cancelamento -> Pagamento |
 
-> Arquivos:
->
-> [ Arquivo do dia 20151012](/attachment/HomologacaoV2/20151012.xml)
->
-> [ Arquivo do dia 20151013](/attachment/HomologacaoV2/20151013.xml)
->
-> [ Arquivo do dia 20151016](/attachment/HomologacaoV2/20151016.xml)
->
-> [ Arquivo do dia 20151017](/attachment/HomologacaoV2/20151017.xml)
->
-> [ Arquivo do dia 20151020](/attachment/HomologacaoV2/20151020.xml)
->
-> [ Arquivo do dia 20151021](/attachment/HomologacaoV2/20151021.xml)
+### Arquivos:
+
+* [Arquivo do dia 20151012](/attachment/HomologacaoV2/20151012.xml)
+* [Arquivo do dia 20151013](/attachment/HomologacaoV2/20151013.xml)
+* [Arquivo do dia 20151016](/attachment/HomologacaoV2/20151016.xml)
+* [Arquivo do dia 20151017](/attachment/HomologacaoV2/20151017.xml)
+* [Arquivo do dia 20151020](/attachment/HomologacaoV2/20151020.xml)
+* [Arquivo do dia 20151021](/attachment/HomologacaoV2/20151021.xml)
 
 # Apêndice
 
-### <cap id="CaptureMethod">CaptureMethod<sup>v1</sup> / POIType<sup>v2</sup></cap>
+### CaptureMethod<sup>v1</sup> / POIType<sup>v2</sup>
 
 |Valor|Descrição|
 |-----|---------|
@@ -1053,23 +871,21 @@ Disponibilizamos 6 arquivos para o uso em testes, esses arquivos mostram o hist�
 |3|TEF|
 |4|ECOMMERCE|
 
-### <br id="Brand">Brand<sup>v1v2</sup></br>
+### Brand<sup>v1v2</sup>
 
 |Valor|Descrição|
 |-----|---------|
 |1|Visa|
 |2|MasterCard|
 
-### <pr id="ProductType">ProductType<sup>v1</sup> / AccountType<sup>v2</sup></pr>
-
-<div class="page-break" />
+### ProductType<sup>v1</sup> / AccountType<sup>v2</sup>
 
 |Valor|Descrição|
 |-----|---------|
 |1|Debit|
 |2|Credit|
 
-### <spt id="SalePlanType"> SalePlanType<sup>v1</sup> /InstallmentType<sup>v2</sup></spt>
+### SalePlanType<sup>v1</sup> /InstallmentType<sup>v2</sup>
 
 |Valor|Descrição|
 |-----|---------|
@@ -1077,7 +893,7 @@ Disponibilizamos 6 arquivos para o uso em testes, esses arquivos mostram o hist�
 |2|parcelado lojista|
 |3|parcelado emissor|
 
-### <ty id="type">Type<sup>v1v2</sup></ty>
+### Type<sup>v1v2</sup>
 
 |Valor|Descrição|
 |-----|---------|
