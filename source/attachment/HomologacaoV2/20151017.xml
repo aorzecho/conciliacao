@@ -142,6 +142,15 @@
   <FinancialEventsAccounts>
   </FinancialEventsAccounts>
   <Payments>
+    <Payment>
+         <Id>198835</Id>
+         <TotalAmount>82918.15</TotalAmount>
+         <FavoredBankAccount>
+            <BankCode>237</BankCode>
+            <BankBranch>1229</BankBranch>
+            <BankAccountNumber>00000000000</BankAccountNumber>
+         </FavoredBankAccount>
+      </Payment>
   </Payments>
   <Trailer>
     <CapturedTransactionsQuantity>0</CapturedTransactionsQuantity>
