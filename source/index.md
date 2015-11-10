@@ -1,3 +1,9 @@
+---
+title: Conciliação Stone
+
+search: true
+---
+
 # Conciliação Stone
 
 A Conciliação Stone é uma ferramenta que disponibiliza diariamente aos estabelecimentos, a demonstração das transações realizadas e suas respectivas informações financeiras, aluguel de POS, ocorridos no dia referenciado. Esta ferramenta permite o acompanhamento desde a captura até o pagamento/desconto de cada uma das transações e lançamentos realizados.
@@ -18,17 +24,21 @@ O arquivo adota o modelo Previsão-Liquidação, diferente do que é praticado n
 
 - Layout v1
 
-      curl \
-      -H "Authorization: affiliation-key" \
-      -H "Accept-Encoding: gzip" \
-      "https://conciliation.stone.com.br/conciliation-file/yyyyMMdd"
+```shell
+curl \
+-H "Authorization: affiliation-key" \
+-H "Accept-Encoding: gzip" \
+"https://conciliation.stone.com.br/conciliation-file/yyyyMMdd"
+```
 
 - Layout v2
 
-        curl \
-        -H "Authorization: affiliation-key" \
-        -H "Accept-Encoding: gzip" \
-        "https://conciliation.stone.com.br/conciliation-file/v2/yyyyMMdd"
+```shell
+curl \
+-H "Authorization: affiliation-key" \
+-H "Accept-Encoding: gzip" \
+"https://conciliation.stone.com.br/conciliation-file/v2/yyyyMMdd"
+```
 
 
 As requisições devem ser enviadas para o serviço de conciliação utilizando o método **GET** para o endpoint `https://conciliation.stone.com.br/conciliation-file/{dataReferencia}` ou `https://conciliation.stone.com.br/conciliation-file/v{numeroversao}/{dataReferencia}`, onde `{dataReferencia}` é a data em que as transações foram capturadas, no formato yyyyMMdd e {numeroversao} o número da versão do layout desejado.
