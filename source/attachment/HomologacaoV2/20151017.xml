@@ -142,7 +142,6 @@
   <FinancialEventsAccounts>
   </FinancialEventsAccounts>
   <Payments>
-<<<<<<< HEAD
     <Payment>
          <Id>198835</Id>
          <TotalAmount>82918.15</TotalAmount>
@@ -152,8 +151,6 @@
             <BankAccountNumber>00000000000</BankAccountNumber>
          </FavoredBankAccount>
       </Payment>
-=======
->>>>>>> a4a70b186912bb918b34a5a5d755bb560e582818
   </Payments>
   <Trailer>
     <CapturedTransactionsQuantity>0</CapturedTransactionsQuantity>
