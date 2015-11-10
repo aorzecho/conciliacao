@@ -1,15 +1,6 @@
----
-title: Integração com serviço de conciliação
-
-language_tabs:
-  - xml: Exemplo de conciliação
-
-search: true
----
-
 # Conciliação Stone
 
-A Conciliação Stone é uma ferramenta que disponibiliza diariamente aos estabelecimentos, a demonstração das transações realizadas e suas respectivas informações financeiras, aluguel de POS, ocorridos em D-1. Esta ferramenta permite o acompanhamento desde a captura até o pagamento/desconto de cada uma das transações e lançamentos realizados.
+A Conciliação Stone é uma ferramenta que disponibiliza diariamente aos estabelecimentos, a demonstração das transações realizadas e suas respectivas informações financeiras, aluguel de POS, ocorridos no dia referenciado. Esta ferramenta permite o acompanhamento desde a captura até o pagamento/desconto de cada uma das transações e lançamentos realizados.
 
 Com a Conciliação Stone, o lojista consegue visualizar de forma bastante clara, o valor líquido e bruto de cada parcela, o valor líquido e bruto de cancelamento parcial e total, quais parcelas da transação foram antecipadas e qual foi o custo da antecipação de cada parcela, chargebacks a serem descontados, etc.
 
@@ -17,33 +8,30 @@ Tudo isto num mesmo lugar, sem a necessidade de tratar vários arquivos com layo
 
 # O serviço de conciliação
 
-O webservice de conciliação consiste em uma requisição HTTP autenticada, utilizando uma camada segura - SSL/TLS, para a obtenção de um arquivo com todos os eventos ocorridos no dia anterior.
+O webservice de conciliação consiste em uma requisição HTTP autenticada, utilizando uma camada segura - SSL/TLS, para a obtenção de um arquivo com todos os eventos ocorridos no dia requisitado.
 
-Esse arquivo contém todas as transações que foram capturadas no dia anterior à data de geração do arquivo - *D-1*, ou seja, todas as transações capturadas no dia anterior ao dia da geração do arquivo. **É importante ressaltar que o arquivo contém apenas as transações que foram capturadas e não as que somente foram autorizadas, uma vez que esse tipo de transação não gera movimento financeiro**.
+Esse arquivo contém todas as transações que foram capturadas no dia requisitado, ou seja, todas as transações capturadas no dia para o qual a conciliação está sendo gerada. **É importante ressaltar que o arquivo contém apenas as transações que foram capturadas e não as que somente foram autorizadas, uma vez que esse tipo de transação não gera movimento financeiro**.
 
 O arquivo adota o modelo Previsão-Liquidação, diferente do que é praticado no mercado. Isso quer dizer que no Arquivo de Conciliação da Stone, estão presentes informações sobre a previsão de pagamento das transações e dos ajustes (agenda); e informações sobre a liquidação das transações e dos ajustes (extrato). **É importante ressaltar que em prol da maior transparência, as transações canceladas não são tratadas como ajustes**.
 
 ## Obtendo o arquivo
 
-- layout v1
+- Layout v1
 
-```
-curl \
--H "Authorization: affiliation-key" \
--H "Accept-Encoding: gzip" \
-"https://conciliation.stone.com.br/conciliation-file/yyyymmdd"
-```
+      curl \
+      -H "Authorization: affiliation-key" \
+      -H "Accept-Encoding: gzip" \
+      "https://conciliation.stone.com.br/conciliation-file/yyyyMMdd"
 
-- layout v2
+- Layout v2
 
-```
-curl \
--H "Authorization: affiliation-key" \
--H "Accept-Encoding: gzip" \
-"https://conciliation.stone.com.br/conciliation-file/v2/yyyymmdd"
-```
+        curl \
+        -H "Authorization: affiliation-key" \
+        -H "Accept-Encoding: gzip" \
+        "https://conciliation.stone.com.br/conciliation-file/v2/yyyyMMdd"
 
-As requisições devem ser enviadas para o serviço de conciliação utilizando o método **GET** para o endpoint `https://conciliation.stone.com.br/conciliation-file/{dataReferencia}` ou `https://conciliation.stone.com.br/conciliation-file/v{numeroversao}/{dataReferencia}`, onde `{dataReferencia}` é a data em que as transações foram capturadas, no formato yyyymmdd e {numeroversao} o número da versão do layout desejado.
+
+As requisições devem ser enviadas para o serviço de conciliação utilizando o método **GET** para o endpoint `https://conciliation.stone.com.br/conciliation-file/{dataReferencia}` ou `https://conciliation.stone.com.br/conciliation-file/v{numeroversao}/{dataReferencia}`, onde `{dataReferencia}` é a data em que as transações foram capturadas, no formato yyyyMMdd e {numeroversao} o número da versão do layout desejado.
 
 Por se tratar de informações sigilosas para a empresa, tanto a requisição quanto a resposta trafegam em uma camada segura criptografada e as requisições precisam, necessariamente, estar autenticadas. Essa autenticação consiste no envio de um campo de cabeçalho HTTP `Authorization` contendo a chave de afiliação da loja `AffiliationKey`.
 
@@ -51,7 +39,24 @@ Por se tratar de informações sigilosas para a empresa, tanto a requisição qu
 
 É possível, ainda, que o volume de operações e eventos seja relativamente grande. Para agilizar a transferência do arquivo, é possível solicitá-lo de forma compactada. Caso seja necessário que o arquivo esteja compactado, o sistema conciliador deve incluir o campo de cabeçalho HTTP `Accept-Encoding: gzip` na requisição ao serviço.
 
-# Layout v2
+<!--
+# Layout V1
+
+> Nota:
+
+>A versão 1 do arquivo de conciliação não será mais atualizada, o serviço ainda pode ser consumido mas encorajamos que adapte sua consulta à versão 2, já que as novas <em>features</em> serão aplicadas apenas ao Layout v2 .
+
+## O Arquivo
+### Conciliation
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| Header   | Container | ###### | Contém as informações do lojista e do arquivo |
+| FinancialTransactions | Container | ###### | Contém as transações que aconteceram com o lojista no dia requisitado |
+| FinancialEvents | Container | ###### | Contém os eventos financeiros lançados para o lojista no dia requisitado |
+| FinancialTransactionsPayments | Container | ###### | Contém as transações que foram pagas/cobradas ao lojista no dia requisitado |
+| FinancialEventPayments | Container | ###### | Contém os eventos que foram pagos/cobrados ao lojista no dia requisistado |
+| Trailer | Container | ###### | Contém os contadores do arquivo |
 
 ### Header
 
@@ -59,7 +64,402 @@ Nó filho de Conciliation que contém as informações referentes à loja e ao a
 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
-| GenerationDateTime | Data/Hora | 14 | Data/Hora de geração do arquivo (Formato: aaaammddHHmmss)|
+| GenerationDateTime | Datetime | 14 | Datetime de geração do arquivo (Formato: aaaammddHHmmss)|
+| StoneCode | Num | 9 | Código identificador da loja |
+| LayoutVersion | Num | 3 | Versão do Layout do arquivo |
+| FileId | Num | 26 | Código identificador do arquivo |
+| ReferenceDate |Date|8| Data a que se refere o arquivo|
+
+### FinancialTransactions
+
+Nó filho de Conciliation, container de Transaction, que contém as transações capturadas e ou canceladas ocorridas no dia de referência do arquivo.
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| Transaction | Container | ###### |  Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc. |
+
+### Transaction
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| AuthorizationDateTime| Datetime | 14 | Datetime da autorização (Formato: aaaammddHHmmss) |
+| OrderReference | Alfa | 128 | Código recebido pelo sistema cliente |
+| StoneId | Num | 14 | Identificador único da transação (NSU) |
+| AuthorizationCode | Num | 6 | Código da autorização fornecido pelo emissor. |
+| CaptureDateTime | Datetime | 14 | Datetime da captura (Formato: aaaammddHHmmss) |
+| Brand | Num | 2 | Bandeira do cartão |
+| CardNumber | Alfa | 19 | Número do cartão (truncado) |
+| SalePlanType | Alfa | 60 | Plano de venda |
+| ProductType | Alfa | 4 | Tipo do produto |
+| NumberOfInstallments | Num | 4 | Número de parcelas |
+| CaptureMethod | Num | 4 | Meio de captura |
+| SerialNumber | Alfa | 50 | Número serial do POS (vazio caso o meio de captura seja ecommerce) |
+| CapturedAmount | Float | 20 | Valor capturado |
+| AuthorizedAmount | Float | 20 | Valor autorizado |
+| AuthorizedCurrencyCode | Num | 4 | Código da moeda |
+| Refund | Container | ###### | Elemento que representa um cancelamento dessa transação* |
+| Installments | Container | ###### | Contém as parcelas da transação. |
+
+>\* Campo que só aparece se a transação tiver tido cancelamento
+
+### Refund
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| RefundGrossAmount | Float | 20 | Valor bruto do cancelamento |
+| RefundAmount | Float | 20 | Valor cobrado do lojista pelo cancelamento |
+| RefundPaymentDate | Date | 14 | Dia em que será/foi cobrado o cancelamento Formato:(aaaaMMdd)|
+| RefundDate | Date | 14 | Dia em que ocorreu o cancelamento |
+
+### Installments
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+|Installment| Container | ###### | Representa uma parcela de uma transação. |
+
+### <ir id = 'installment'>Installment</ir>
+
+Representa uma parcela de uma transação.
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| InstallmentNumber | Num | 2 | Número da parcela |
+| GrossAmount | Float | 20 | Valor bruto da parcela |
+| NetAmount | Float | 20 | Valor liquido da parcela |
+| AdvanceRateAmount | Float | 20 | Valor cobrado pela antecipação de recebível* |
+| AdvancedReceivableOriginalPaymentDate | Datetime | 8 | Data original de pagamento do recebível adiantado* |
+| Chargeback | Container | ###### | Contém chargebacks relativos a parcela** |
+| ChargebackRefund | Container | ###### | Contém estornos de chargeback relativos a parcela\*** |
+|PaymentDate | Datetime | 8 | Dia em que a transação será/foi paga ao lojista  |
+| MdrNetAmount | Float | 20 | Valor líquido sem a taxa de antecipação \* |
+
+> \* Campo que aparece apenas se houve antecipação da parcela
+>
+> \*\* Campo que aparece somente se houve chargeback da parcela
+>
+> \*\*\* Campo que aparece apenas se houve reapresentação de chargeback
+
+### ChargeBack
+
+Nó filho de Installment que contém informações sobre o chargeback, como data do pagemento, Id do chargeback, data em que ocorreu o chargeback, etc.
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| Id | Num | 10 | Identificador do chargeback |
+| Amount | Float | 20 | Valor do chargeback |
+| Date | Data | 8 | Data em que ocorreu o chargeback. (Formato: aaaammdd) |
+| PaymentDate | Data | 8 | Data em que o chargeback será descontado. (Formato: aaaammdd) |
+| ReasonCode | Num | 8 | Código do motivo do chargeback informado pelo banco emissor |
+
+### ChargeBackRefund
+
+Nó filho de Installment que contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| Id | Num | 10 | Identificador da reapresentação do chargeback |
+| Amount | Float | 20 | Valor da reapresentação do chargeback |
+| Date | Data | 8 | Data em que ocorreu a reapresentação do chargeback. (Formato: aaaammdd) |
+| PaymentDate | Data | 8 | Data em que a reapresentação o chargeback será creditada. (Formato: aaaammdd) |
+| ReasonCode | Num | 8 | Código do motivo do chargeback informado pelo banco emissor |
+
+### FinancialTransactionPayments
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| Transaction | Container | ###### |  Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc. |
+
+### Transaction
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| AuthorizationDateTime| Datetime | 14 | Datetime da autorização (Formato: aaaammddHHmmss) |
+| OrderReference | Alfa | 128 | Código recebido pelo sistema cliente |
+| StoneId | Num | 14 | Identificador único da transação (NSU) |
+| AuthorizationCode | Num | 6 | Código da autorização fornecido pelo emissor. |
+| CaptureDateTime | Datetime | 14 | Datetime da captura (Formato: aaaammddHHmmss) |
+| Brand | Num | 2 | Bandeira do cartão |
+| CardNumber | Alfa | 19 | Número do cartão (truncado) |
+| SalePlanType | Alfa | 60 | Plano de venda |
+| ProductType | Alfa | 4 | Tipo do produto |
+| NumberOfInstallments | Num | 4 | Número de parcelas |
+| CaptureMethod | Num | 4 | Meio de captura |
+| SerialNumber | Alfa | 50 | Número serial do POS (vazio caso o meio de captura seja ecommerce) |
+| CapturedAmount | Float | 20 | Valor capturado |
+| AuthorizedAmount | Float | 20 | Valor autorizado |
+| AuthorizedCurrencyCode | Num | 4 | Código da moeda |
+| BankId | Num | 4 | Código de identificação do banco do beneficiado |
+| BankBranch | Num | 4 | Agência Bancária do beneficiado |
+| BankAccount | Num | 12 | Conta bancária do beneficiado |  
+| Refund | Container | ###### | Elemento que representa um cancelamento dessa transação* |
+| Installments | Container | ###### | Contém as parcelas da transação. |
+
+>\* Campo que só aparece se a transação tiver tido cancelamento
+
+### Installments
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+|Installment| Container | ###### | Representa uma parcela de uma transação. |
+
+### Installment
+
+Representa uma parcela de uma transação. Semelhante ao elemento [Installment](#installment) descrito acima -->
+
+# Layout V2
+
+Diferente do layout 1 onde a apresentação é dinâmica e é possível observar o ciclo de vida de uma transação coletando o arquivo em diferentes momentos,
+por exemplo uma transação realizada no dia 24-08 e cancelada no dia 19-10
+
+
+  + Pedido de arquivo para o dia 24-08-2015 (Layout 1):
+
+    ``` xml
+    <Conciliation>
+      <Header>
+        <GenerationDateTime>20151020150721</GenerationDateTime>
+        <StoneCode>123456789</StoneCode>
+        <LayoutVersion>1</LayoutVersion>
+        <FileId>000111</FileId>
+        <ReferenceDate>20150824</ReferenceDate>
+      </Header>
+      <FinancialTransactions>
+        <Transaction>
+          <AuthorizationDateTime>20150824182825</AuthorizationDateTime>
+          <OrderReference>1157795</OrderReference>
+          <StoneId>33650014557171</StoneId>
+          <AuthorizationCode>022535</AuthorizationCode>
+          <CaptureDateTime>20150824152839</CaptureDateTime>
+          <Brand>1</Brand>
+          <CardNumber>123456******1122</CardNumber>
+          <SalePlanType>2</SalePlanType>
+          <ProductType>2</ProductType>
+          <NumberOfInstallments>2</NumberOfInstallments>
+          <SerialNumber/>
+          <CapturedAmount>130.620000</CapturedAmount>
+          <AuthorizedAmount>130.620000</AuthorizedAmount>
+          <AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
+          <Refund>
+            <RefundGrossAmount>130.620000</RefundGrossAmount>
+            <RefundAmount>127.628802</RefundAmount>
+            <RefundPaymentDate>20150923</RefundPaymentDate>
+            <RefundDate>20151019</RefundDate>
+          </Refund>
+          <Installments>
+            <Installment>
+              <InstallmentNumber>1</InstallmentNumber>
+              <GrossAmount>65.310000</GrossAmount>
+              <NetAmount>63.814401</NetAmount>
+              <PaymentDate>20150923</PaymentDate>
+            </Installment>
+            <Installment>
+              <InstallmentNumber>2</InstallmentNumber>
+              <GrossAmount>65.310000</GrossAmount>
+              <NetAmount>63.814401</NetAmount>
+              <PaymentDate>20151020</PaymentDate>
+            </Installment>
+          </Installments>
+        </Transaction>
+        <Transaction>
+          ...
+    ```
+
+  + Pedido do arquivo para o dia 19-10-2015 (Layout 1):
+
+    ```xml
+    <Conciliation>
+      <Header>
+        <GenerationDateTime>20151020150410</GenerationDateTime>
+        <StoneCode>123456789</StoneCode>
+        <LayoutVersion>1</LayoutVersion>
+        <FileId>110011</FileId>
+        <ReferenceDate>20151019</ReferenceDate>
+      </Header>
+      <FinancialTransactions>
+        <Transaction>
+          <AuthorizationDateTime>20150824182825</AuthorizationDateTime>
+          <OrderReference>1157795</OrderReference>
+          <StoneId>33650014557171</StoneId>
+          <AuthorizationCode>022535</AuthorizationCode>
+          <CaptureDateTime>20150824152839</CaptureDateTime>
+          <Brand>1</Brand>
+          <CardNumber>123456******1122</CardNumber>
+          <SalePlanType>2</SalePlanType>
+          <ProductType>2</ProductType>
+          <NumberOfInstallments>2</NumberOfInstallments>
+          <SerialNumber/>
+          <CapturedAmount>130.620000</CapturedAmount>
+          <AuthorizedAmount>130.620000</AuthorizedAmount>
+          <AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
+          <Refund>
+            <RefundGrossAmount>130.620000</RefundGrossAmount>
+            <RefundAmount>127.628802</RefundAmount>
+            <RefundPaymentDate>20150923</RefundPaymentDate>
+            <RefundDate>20151019</RefundDate>
+          </Refund>
+          <Installments>
+            <Installment>
+              <InstallmentNumber>1</InstallmentNumber>
+              <GrossAmount>65.310000</GrossAmount>
+              <NetAmount>63.814401</NetAmount>
+              <PaymentDate>20150923</PaymentDate>
+            </Installment>
+            <Installment>
+              <InstallmentNumber>2</InstallmentNumber>
+              <GrossAmount>65.310000</GrossAmount>
+              <NetAmount>63.814401</NetAmount>
+              <PaymentDate>20151020</PaymentDate>
+            </Installment>
+          </Installments>
+        </Transaction>
+        <Transaction>
+          ...
+
+    ```
+
++ A transação com o StoneId = 33650014557171, aparece no arquivo do dia 24-08 e no arquivo do dia 19-10, como a transação foi cancelada no dia 19-10, o arquivo do dia 19-10 e o arquivo do dia 24-08 apresentam o campo Refund já que o modelo é dinâmico
+
+
+ O layout 2 segue o modelo de apresentação estático , exibindo as transações como uma "foto" do momento da transação naquele dia, usando o exemplo anterior:
+
+
++ Pedido de arquivo para o dia 24-08-2015 (Layout 2):
+
+  ```xml
+  <Conciliation>
+    <Header>
+      <GenerationDateTime>20151013145131</GenerationDateTime>
+      <StoneCode>123456789</StoneCode>
+      <LayoutVersion>2</LayoutVersion>
+      <FileId>500921</FileId>
+      <ReferenceDate>20150824</ReferenceDate>
+    </Header>
+    <FinancialTransactions>
+      <Transaction>
+        <Events>
+          <CancellationCharges>0</CancellationCharges>
+          <Cancellations>0</Cancellations>
+          <Captures>1</Captures>
+          <ChargebackRefunds>0</ChargebackRefunds>
+          <Chargebacks>0</Chargebacks>
+          <Payments>0</Payments>
+        </Events>
+        <AcquirerTransactionKey>33650014557171</AcquirerTransactionKey>
+        <InitiatorTransactionKey>1331635</InitiatorTransactionKey>
+        <AuthorizationDateTime>20150920030409</AuthorizationDateTime>
+        <CaptureLocalDateTime>20150920000415</CaptureLocalDateTime>
+        <AccountType>2</AccountType>
+        <InstallmentType>1</InstallmentType>
+        <NumberOfInstallments>10</NumberOfInstallments>
+        <AuthorizedAmount>130.620000</AuthorizedAmount>
+        <CapturedAmount>130.620000</CapturedAmount>
+        <AuthorizationCurrencyCode>986</AuthorizationCurrencyCode>
+        <IssuerAuthorizationCode>040947</IssuerAuthorizationCode>
+        <BrandId>1</BrandId>
+        <CardNumber>422061******2743</CardNumber>
+        <Poi>
+          <PoiType>4</PoiType>
+        </Poi>
+        <Installments>
+          <Installment>
+            <InstallmentNumber>1</InstallmentNumber>
+            <GrossAmount>65.310000</GrossAmount>
+            <NetAmount>63.814401</NetAmount>
+            <PrevisionPaymentDate>20150923</PrevisionPaymentDate>
+          </Installment>
+          <Installment>
+            <InstallmentNumber>2</InstallmentNumber>
+            <GrossAmount>65.310000</GrossAmount>
+            <NetAmount>63.814401</NetAmount>
+            <PrevisionPaymentDate>20151020</PrevisionPaymentDate>
+          </Installment>
+        </Installments>
+      </Transaction>
+      <Transaction>
+        ...
+  ```
+
+
++ Pedido do arquivo para o dia 19-10-2015 (Layout 2):
+
+  ```xml
+      <Conciliation>
+        <Header>
+          <GenerationDateTime>20151013145131</GenerationDateTime>
+          <StoneCode>123456789</StoneCode>
+          <LayoutVersion>2</LayoutVersion>
+          <FileId>500921</FileId>
+          <ReferenceDate>20151910</ReferenceDate>
+        </Header>
+        <FinancialTransactions>
+          <Transaction>
+            <Events>
+              <CancellationCharges>0</CancellationCharges>
+              <Cancellations>1</Cancellations>
+              <Captures>0</Captures>
+              <ChargebackRefunds>0</ChargebackRefunds>
+              <Chargebacks>0</Chargebacks>
+              <Payments>0</Payments>
+            </Events>
+            <AcquirerTransactionKey>33650014557171</AcquirerTransactionKey>
+            <InitiatorTransactionKey>1157795</InitiatorTransactionKey>
+            <AuthorizationDateTime>20150824155931</AuthorizationDateTime>
+            <CaptureLocalDateTime>20150824125935</CaptureLocalDateTime>
+            <Poi>
+              <PoiType>4</PoiType>
+            </Poi>
+            <Cancellations>
+              <Cancellation>
+                <OperationKey>3635000017434024</OperationKey>
+                <CancellationDateTime>20150910034340</CancellationDateTime>
+                <ReturnedAmount>130.620000</ReturnedAmount>
+                <Billing>
+                  <ChargedAmount>127.628802</ChargedAmount>
+                  <PrevisionChargeDate>20150911</PrevisionChargeDate>
+                </Billing>
+              </Cancellation>
+            </Cancellations>
+          </Transaction>
+          <Transaction>
+            ...
+      ```
+
++ A transação com o StoneId = 33650014557171, aparece no arquivo do dia 24-08 e no arquivo do dia 19-10, como a transação foi cancelada no dia 19-10, o arquivo do dia 19-10 apresenta o campo Cancellations já que o modelo é estático
+
+## O Fluxo
+
+Quando uma transação é realizada, um nó *Transaction* referente a ela aparecerá sob *FinancialTransactions* no arquivo de conciliação desse dia com um evento *Captured* em *Event*. Se essa transação for modificada (ChargeBack, Cancelamento, Reapresentação de ChargeBack) ainda nesse dia um evento relacionado a essa modificação será incluido em *Event*.
+
+Se a transação sofrer qualquer modificação em um dia diferente do dia da captura a transação aparecerá novamente sob *FinancialTransactions* desse dia com um evento relativo a modificação.
+
+No dia em que essa transação for efetivamente paga ao lojista, um nó *Transaction* aparecerá sob *FinancialTransactionsAccounts*, e um nó *Payment* referente ao pagamento dessa transação em *Payments* no arquivo de conciliação desse dia.
+
+O Fluxo é semelhante para os Eventos financeiros, porém esses ficam sob *FinancialEvents* e *FinancialEventsAccounts*
+
+Portanto o arquivo de conciliação mostra tanto as transações pagas quanto as realizadas no dia referido
+## O Arquivo
+
+### Conciliation
+
+Nó principal do arquivo de conciliação
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| Header   | Container | ###### | Contém as informações do lojista e do arquivo |
+| FinancialTransactions | Container | ###### | Contém as transações que aconteceram com o lojista no dia requisitado |
+| FinancialEvents | Container | ###### | Contém os eventos financeiros lançados para o lojista no dia requisitado |
+| FinancialTransactionsAccounts | Container | ###### | Contém as transações que foram pagas/cobradas ao lojista no dia requisitado |
+|FinancialEventAccounts | Container | ###### | Contém os eventos que foram pagos/cobrados ao lojista no dia requisistado |
+| Payments | Container | ###### |  Contém informações dos pagamentos efetuados relativos as transações e eventos financeiros do arquivo. |
+| Trailer | Container | ###### | Contém os totalizadores e contadores do arquivo |
+
+### Header
+
+Nó filho de Conciliation que contém as informações referentes à loja e ao arquivo, como identificação do lojista, data de geração do arquivo, etc.
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| GenerationDateTime | Datetime | 14 | Datetime de geração do arquivo (Formato: aaaammddHHmmss)|
 | StoneCode | Num | 9 | Código identificador da loja |
 | LayoutVersion | Num | 3 | Versão do Layout do arquivo |
 | FileId | Num | 26 | Código identificador do arquivo |
@@ -73,32 +473,36 @@ Nó filho de Conciliation, container de Transaction, que contém as transações
 | -------- | --------- |
 | Transaction | Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc. |
 
-### Transaction
+### <t id="Transaction">Transaction</t>
 
-Nó filho de FinancialTransactions ou de FinancialTransactionPayments que contém as informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.
+Nó filho de FinancialTransactions que contém as informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.
 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
-| Events| Container | ## | Contém contadores dos eventos da transação no dia de referência do arquivo.|
+| Events| Container | ###### | Contém contadores dos eventos da transação no dia de referência do arquivo.|
 | AcquirerTransactionKey | Num | 14 | Identificador único da transação (NSU) gerado pela adquirente|
 | InitiatorTransactionKey | Alfa | 128 | Código recebido pelo sistema cliente |
-| AuthorizationDateTime| Data/Hora | 14 | Data/Hora da autorização (Formato: aaaammddHHmmss) |
-| CaptureLocalDateTime | Data/Hora | 14 | Data/Hora da captura (Formato: aaaammddHHmmss) no horario local da adquirente|
-| AccountType | Alfa | 4 | Tipo de conta utilizada na transação crédito, débito, etc... |
-| InstallmentType | Alfa | 60 | Tipo de parcelamento utilizado na transação lojista/emissor |
-| NumberOfInstallments | Num | 4 | Número de parcelas |
-| AuthorizedAmount | Float | 20 | Valor autorizado |
-| CapturedAmount | Float | 20 | Valor capturado |
-| CanceledAmount | Float | 20 | Total cancelado |
-| AuthorizationCurrencyCode | Num | 4 | Código da moeda |
-| IssuerAuthorizationCode | Num | 6 | Código da autorização fornecido pelo emissor. |
-| BrandId | Num | 2 | Identificador da bandeira do cartão |
-| CardNumber | Alfa | 19 | Número do cartão (truncado) |
-| Poi | Container | ## | Contém dados do Ponto de Interação (terminal) que realizou a transação|
-| Cancellations | Container | ## | Contém informações referentes aos cancelamentos, como data de desconto do cancelamento e valor total do cancelamento. |
-| Installments| Container | ## | Contém as parcelas da transação. |
+| AuthorizationDateTime| Datetime | 14 | Datetime da autorização (Formato: aaaammddHHmmss) |
+| CaptureLocalDateTime | Datetime | 14 | Datetime da captura (Formato: aaaammddHHmmss) no horario local da adquirente|
+| [AccountType](#ProductType) | Alfa | 4 | Tipo de conta utilizada na transação crédito, débito, etc...* |
+| [InstallmentType](#SalePlanType) | Alfa | 60 | Tipo de parcelamento utilizado na transação lojista/emissor* |
+| NumberOfInstallments | Num | 4 | Número de parcelas* |
+| AuthorizedAmount | Float | 20 | Valor autorizado* |
+| CapturedAmount | Float | 20 | Valor capturado* |
+| CanceledAmount | Float | 20 | Total cancelado* |
+| AuthorizationCurrencyCode | Num | 4 | Código da moeda* |
+| IssuerAuthorizationCode | Num | 6 | Código da autorização fornecido pelo emissor.* |
+| [BrandId](#Brand) | Num | 2 | Identificador da bandeira do cartão* |
+| CardNumber | Alfa | 19 | Número do cartão (truncado)* |
+| Poi | Container | ###### | Contém dados do Ponto de Interação (terminal) que realizou a transação|
+| Cancellations | Container | ###### | Contém informações referentes aos cancelamentos, como data de desconto do cancelamento e valor total do cancelamento.** |
+| Installments| Container | ###### | Contém as parcelas da transação. |
 
-### Events
+> \* Elementos que aparecem apenas quando a transação é de captura
+>
+> ** Elemento que aparece apenas quando a transação é de cancelamento
+
+### <b id="Events">Events</b>
 
 Nó filho de Transaction, contém contadores dos eventos de uma transação no dia de referência do arquivo.
 
@@ -111,33 +515,39 @@ Nó filho de Transaction, contém contadores dos eventos de uma transação no d
 | Chargebacks | Num | 9 | Número de chargebacks |
 | Payments | Num | 9 | Número de pagamentos |
 
+
 ### Poi
 
 Contém dados do Ponto de Interação (terminal) que realizou a transação.
 
+<div class="page-break" />
+
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
-| PoiType | Num | 4 | Tipo do ponto de interação (e-commerce, pos, mobile, etc).|
+| [PoiType](#CaptureMethod) | Num | 4 | Tipo do ponto de interação (e-commerce, pos, mobile, etc).|
 | SerialNumber | Num | 32 | Número de série do terminal, se existir |
 
-### Cancellations
+### <cs id="Cancellations">Cancellations</cs>
 
 Contém uma lista de cancelamentos
 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
-| Cancellation | Container | ## | Representa um cancelamento de uma transação |
+| Cancellation | Container | ###### | Representa um cancelamento de uma transação |
 
-### Cancellation
+### <canc id="Cancellation">Cancellation</canc>
 
 Representa um cancelamento de uma transação.
 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
 | OperationKey | Alfa | 32 | identificador único da operação de cancelamento|
-| CancellationDateTime | Data/Hora | 14 |Data hora do cancelamento (Formato: aaaammddHHmmss)|
+| CancellationDateTime | Datetime | 14 |Data hora do cancelamento (Formato: aaaammddHHmmss)|
 | ReturnedAmount | Float | 20 | Valor revertido e devolvido ao portador do cartão |
-| Billing | Collection | ## | Lista de cobranças relativa ao cancelamento |
+| Billing | Collection | ###### | Lista de cobranças relativa ao cancelamento \* |
+
+>\* Aparece apenas se a transação não tiver sido cancelada no mesmo dia da captura
+
 
 ### Billing
 
@@ -146,16 +556,16 @@ Cobrança relativa ao cancelamento.
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
 | ChargedAmount | Float | 20 | Valor de desconto do cancelamento (descontado do lojista)|
-| PrevisionChargeDate | Data/Hora | 8 | Data prevista para cobrança (aparece quando o elemento de cobrança está sob o nó de agenda [FinancialTransactions]) (Formato: aaaammdd) |
-| ChargeDate | Data/Hora | 8 | Data de cobrança (aparece no nó [FinancialTransactionsAccounts]) (Formato: aaaammdd)|
+| PrevisionChargeDate | Datetime | 8 | Data prevista para cobrança  (Formato: aaaammdd) |
+
 
 ### Installments
 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
-|Installment| Container | ## | Representa uma parcela de uma transação. |
+|Installment| Container | ###### | Representa uma parcela de uma transação. |
 
-## Installment
+### Installment
 
 Representa uma parcela de uma transação.
 
@@ -164,36 +574,38 @@ Representa uma parcela de uma transação.
 | InstallmentNumber | Num | 2 | Número da parcela |
 | GrossAmount | Float | 20 | Valor bruto da parcela |
 | NetAmount | Float | 20 | Valor liquido da parcela |
-| PaymentDate | Data/Hora | 8 | Data de pagemento da parcela. (Formato: aaaammdd)|
-| PrevisionPaymentDate | Data/Hora | 8 | Previsão da data de pagamento (aparece quando o elemento de cobrança está sob o nó de agenda [FinancialTransactions]) (Formato: aaaammdd)|
-| AdvanceRateAmount | Float | 20 | Valor cobrado pela antecipação de recebível |
-| AdvancedReceivableOriginalPaymentDate | Data/Hora | 8 | Data original de pagamento do recebível adiantado |
-| Chargeback | Container | ## | Contém chargebacks relativos a parcela |
-| ChargebackRefund | Container | ## | Contém estornos de chargeback relativos a parcela |
-| PaymentId | Num | 9 | Referência do elemento de pagamento ([Payments]) no qual a liquidação dessa parcela foi incluida |
+| PrevisionPaymentDate | Datetime | 8 | Previsão da data de pagamento (Formato: aaaammdd)|
+| Chargeback | Container | ###### | Contém chargebacks relativos a parcela** |
+| ChargebackRefund | Container | ###### | Contém estornos de chargeback relativos a parcela\*** |
 
-### Chargeback
+> ** Elemento que só aparece quando houve Chargeback
+>
+> \*** Elemento que só aparece quando houve Chargeback e Reapresentação de Chargeback
 
-Nó filho de [Installment] que contém informações sobre o chargeback, como data de desconto, Id do chargeback, data em que ocorreu o chargeback, etc.
+### <c id="Chargeback">Chargeback</c>
+
+Nó filho de Installment que contém informações sobre o chargeback, como data de desconto, Id do chargeback, data em que ocorreu o chargeback, etc.
 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
 | Id | Num | 10 | Identificador do chargeback |
 | Amount | Float | 20 | Valor do chargeback |
-| Date | Data | 8 | Data em que ocorreu o chargeback. (Formato: aaaammdd) |
-| ChargeDate | Data | 8 | Data em que o chargeback será descontado. (Formato: aaaammdd) |
+| Date | Date | 8 | Data em que ocorreu o chargeback. (Formato: aaaammdd) |
+| ChargeDate | Date | 8 | Data em que o chargeback será descontado. (Formato: aaaammdd) |
 | ReasonCode | Num | 8 | Código de motivo do chargeback informado pelo banco emissor |
 
-### ChargebackRefund
+### <d id="ChargebackRef">ChargebackRefund</d>
 
-Nó filho de [Installment] que contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.
+Nó filho de Installment que contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.
+
+<div class="page-break" />
 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
 | Id | Num | 10 | Identificador da reapresentação do chargeback |
 | Amount | Float | 20 | Valor da reapresentação do chargeback |
-| Date | Data | 8 | Data em que ocorreu a reapresentação do chargeback. (Formato: aaaammdd) |
-| PaymentDate | Data | 8 | Data em que a reapresentação o chargeback será creditada. (Formato: aaaammdd) |
+| Date | Date | 8 | Data em que ocorreu a reapresentação do chargeback. (Formato: aaaammdd) |
+| PaymentDate | Date | 8 | Data em que a reapresentação o chargeback será creditada. (Formato: aaaammdd) |
 | ReasonCode | Num | 8 | Código de motivo do chargeback informado pelo banco emissor |
 
 ### FinancialEvents
@@ -204,27 +616,105 @@ Nó filho de Conciliation, previsão de eventos financeiros lançados no dia de 
 | -------- | --------- |
 | Event | Contém informações sobre o evento ocorrido |
 
-### Event
+### <e id ="Event">Event</e>
 
-Nó filho de [FinancialEvents] ou de [FinacialEventPayments], descreve os detalhes do evento ocorrido.
+Nó filho de FinancialEvents , descreve os detalhes do evento ocorrido.
 
 | Elemento | Tipo | Tamanho | Descrição |
 | -------- | ---- | ------- | --------- |
 | EventId | Num | 10 | Código identificador do evento |
-| PaymentId | Num | 9 | Referência do elemento de pagamento ([Payments]) no qual a liquidação dessa parcela foi incluida, aparece no nó [FinacialEventPayments]|
 | Description | Alfa | 60 | Descrição do evento |
 | Type | Num | 2 | Tipo do evento |
-| PaymentDate | Data | 8 | Data em que o evento será pago. (Formato: aaaammdd) |
-| PrevisionPaymentDate | Data | 8 | Previsão da data de cobrança (aparece sob o nó FinancialEvents) |
+| PrevisionPaymentDate | Date | 8 | Previsão da data de cobrança |
 | Amount | Float | 20 | Valor do evento |
 
 ### FinancialTransactionsAccounts
 
 Nó filho de Conciliation, container de Transaction, que contém as transações pagas ou descontadas no dia referência do arquivo.
 
+<div class="page-break" />
+
 | Elemento | Descrição |
 | -------- | --------- |
 | Transaction | Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc. |
+
+### Transaction
+
+Nó filho de FinancialTransactionPayments que contém as informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.
+
+[**Igual ao nó transaction de FinancialTransactions**](#Transaction)
+
+
+### Events
+
+Nó filho de Transaction, contém contadores dos eventos de uma transação no dia de referência do arquivo.
+
+[**Igual ao nó Events em Transaction de FinancialTransactions**](#Events)
+
+**Porém o único evento que aparece em uma transação de FinancialTransactionAccounts é Payment**
+
+### Cancellations
+
+Contém uma lista de cancelamentos
+
+[**Igual ao nó Cancellations descrito acima**](#Cancellations)
+### Cancellation
+
+Representa um cancelamento de uma transação.
+
+[** Igual ao nó Cancellation descrito acima**](#Cancellation)
+
+### Billing
+
+Cobrança relativa ao cancelamento.
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| ChargedAmount | Float | 20 | Valor de desconto do cancelamento (descontado do lojista)|
+| ChargeDate | Datetime | 8 | Data de cobrança (Formato: aaaammdd)|
+
+### Installments
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+|Installment| Container | ###### | Representa uma parcela de uma transação. |
+
+### Installment
+
+Representa uma parcela de uma transação.
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| InstallmentNumber | Num | 2 | Número da parcela |
+| GrossAmount | Float | 20 | Valor bruto da parcela |
+| NetAmount | Float | 20 | Valor liquido da parcela |
+| PaymentDate | Datetime | 8 | Data de pagamento da parcela. (Formato: aaaammdd)|
+| AdvanceRateAmount | Float | 20 | Valor cobrado pela antecipação de recebível* |
+| AdvancedReceivableOriginalPaymentDate | Datetime | 8 | Data original de pagamento do recebível adiantado* |
+| SuspendedByChargeback | Alfa | 4 | Marcador se o pagamento da parcela está suspensa por Chargeback\*\*\*\* |
+| Chargeback | Container | ###### | Contém chargebacks relativos a parcela** |
+| ChargebackRefund | Container | ###### | Contém estornos de chargeback relativos a parcela\*** |
+| PaymentId | Num | 9 | Referência do elemento de pagamento (Payments) no qual a liquidação dessa parcela foi incluida |
+
+> \* Elementos que só aparecem quando houver antecipação
+>
+> ** Elemento que só aparece quando houve Chargeback
+>
+> \*** Elemento que só aparece quando houve Chargeback e Reapresentação de Chargeback
+>
+>  \*\*\*\* Aparece apenas nas parcelas posteriores à parcela que sofreu chargeback
+
+### Chargeback
+
+Nó filho de Installment que contém informações sobre o chargeback, como data de desconto, Id do chargeback, data em que ocorreu o chargeback, etc.
+
+[**Igual ao nó Chargeback descrito acima**](#Chargeback)
+
+### ChargebackRefund
+
+Nó filho de [Installment] que contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.
+
+[**Igual ao nó ChargebackRefund descrito acima**](#ChargebackRef)
 
 ### FinancialEventAccounts
 
@@ -233,6 +723,20 @@ Nó filho de Conciliation, eventos financeiros pagos ou descontados no dia de re
 | Elemento | Descrição |
 | -------- | --------- |
 | Event | Contém informações sobre o evento ocorrido |
+
+### Event
+Nó filho de FinacialEventPayments ,descreve os detalhes do evento ocorrido.
+
+Nó filho de [FinancialEvents] ou de [FinacialEventPayments], descreve os detalhes do evento ocorrido.
+
+| Elemento | Tipo | Tamanho | Descrição |
+| -------- | ---- | ------- | --------- |
+| EventId | Num | 10 | Código identificador do evento |
+| PaymentId | Num | 9 | Referência do elemento de pagamento ([Payments]) no qual a liquidação dessa parcela foi incluida, aparece no nó [FinacialEventPayments]|
+| Description | Alfa | 60 | Descrição do evento |
+| [Type](#type) | Num | 2 | Tipo do evento |
+| PaymentDate | Date | 8 | Data em que o evento foi pago. (Formato: aaaammdd) |
+| Amount | Float | 20 | Valor do evento |
 
 ### Payments
 
@@ -250,7 +754,7 @@ Nó filho de Payments, representa um pagamento efetuado para o lojista.
 | -------- | ---- | ------- | --------- |
 | Id | Num | 9 | Identificador do pagamento. |
 | TotalAmount | Float | 20 | Valor total depositado na conta do lojista.|
-| FavoredBankAccount | Container | ## | Informações bancarias da conta favorecida pelo pagamento |
+| FavoredBankAccount | Container | ###### | Informações bancarias da conta favorecida pelo pagamento |
 
 ### FavoredBankAccount
 
@@ -265,7 +769,7 @@ Nó filho de Payments, representa um pagamento efetuado para o lojista.
 Contadores e totalizadores do arquivo.
 
 | Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
+| :-------- | ---- | ------- | --------- |
 | CapturedTransactionsQuantity | Num | 9 | Número de transações capturadas |
 | CanceledTransactionsQuantity | Num | 9 | Número de transações canceladas |
 | PaidInstallmentsQuantity | Num | 9 | Número de transações pagas |
@@ -277,356 +781,260 @@ Contadores e totalizadores do arquivo.
 | PaidEventsQuantity  | Num | 9 | Número de eventos financaeiros pagos |
 | ChargedEventsQuantity  | Num | 9 | Número de eventos financaeiros descontados |
 
-# Layout v1
-
-
-### Arquivo de conciliação de exemplo
-
-Você pode fazer o download de um arquivo de conciliação com um exemplo mais completo através do seguinte link: [Stone.123456789.20141103.xml](/attachment/Stone.123456789.20141103.xml)
+## Exemplo de Layout v2
 
 ```xml
-<?xml version="1.0" encoding="utf-8"?>
 <Conciliation>
-    <Header>
-        <GenerationDateTime>20141217200910</GenerationDateTime>
-        <StoneCode>1234567</StoneCode>
-        <MerchantName>Uma empresa de exemplo.</MerchantName>
-        <MerchantTaxId>11.111.111/0001-24</MerchantTaxId>
-        <LayoutVersion>1</LayoutVersion>
-		<ReferenceDate>20150607</ReferenceDate>
-    </Header>
-    <FinancialTransactions>
-        <Transaction>
-            <AuthorizationDateTime>20141216035050</AuthorizationDateTime>
-            <OrderReference>abdcefa068354aaa</OrderReference>
-            <StoneId>12345678901234</StoneId>
-            <AuthorizationCode>T12345</AuthorizationCode>
-            <CaptureDateTime>20141216015054</CaptureDateTime>
-            <Brand>2</Brand>
-            <CardNumber>526778******1234</CardNumber>
-            <SalePlanType>282</SalePlanType>
-            <ProductType>2</ProductType>
-            <NumberOfInstallments>2</NumberOfInstallments>
-            <CaptureMethod>Ecommerce</CaptureMethod>
-            <SerialNumber />
-            <CapturedAmount>240.000000</CapturedAmount>
-            <AuthorizedAmount>240.000000</AuthorizedAmount>
-            <AuthorizedCurrencyCode>986</AuthorizedCurrencyCode>
-            <Installments>
-                <Installment>
-                    <InstallmentNumber>1</InstallmentNumber>
-                    <GrossAmount>20.000000</GrossAmount>
-                    <NetAmount>19.560000</NetAmount>
-                    <PaymentDate>20150115</PaymentDate>
-                </Installment>
-                <Installment>
-                    <InstallmentNumber>4</InstallmentNumber>
-                    <GrossAmount>20.000000</GrossAmount>
-                    <NetAmount>19.560000</NetAmount>
-                    <PaymentDate>20150415</PaymentDate>
-                </Installment>
-            </Installments>
-        </Transaction>
-    </FinancialTransactions>
-    <FinancialTransactionsPayments>
-        <Transaction>
-            <AuthorizationDateTime>20140818145634</AuthorizationDateTime>
-            <OrderReference />
-            <StoneId>12345678901234</StoneId>
-            <AuthorizationCode>081237</AuthorizationCode>
-            <CaptureDateTime>20140818115634</CaptureDateTime>
-            <BankId />
-            <BankBrach />
-            <BankAccount />
-            <Installments>
-                <Installment>
-                    <InstallmentNumber>4</InstallmentNumber>
-                    <GrossAmount>100.000000</GrossAmount>
-                    <NetAmount>97.800000</NetAmount>
-                    <PaymentDate>20141216</PaymentDate>
-					<ChargeBack>
-				        <Id>132456</Id>
-					    <Amount>100.000000</Amount>
-					    <Date>20141216</Date>
-					    <PaymentDate>20141217</PaymentDate>
-				    </ChargeBack>
-                </Installment>
-            </Installments>
-        </Transaction>
-    </FinancialTransactionsPayments>
-	<FinancialEvents>
-	    <Event>
-		    <EventId>321</EventId>
-			<Description>ALUGUEL DE POS</Description>
-			<Type>1</Type>
-			<PaymentDate>20140503</PaymentDate>
-			<Amount>80.000000</Amount>
-		</Event>
-	</FinancialEvents>
-	<FinancialEventPayments>
-	    <Event>
-		    <BankId>237</BankId>
-			<BankBrach>111</BankBrach>
-			<BankAccount>111111-11</BankAccount>
-			<EventId>321</EventId>
-			<Description>ALUGUEL DE POS</Description>
-			<Type>1</Type>
-			<PaymentDate>20140503</PaymentDate>
-			<Amount>80.000000</Amount>
-		</Event>
-	</FinancialEventPayments>
-    <Trailer>
-        <CapturedTransactionsQuantity>16</CapturedTransactionsQuantity>
-        <CanceledTransactionsQuantity>0</CanceledTransactionsQuantity>
-        <PaidTransactionsQuantity>35</PaidTransactionsQuantity>
-    </Trailer>
+  <Header>
+    <GenerationDateTime>20151013145131</GenerationDateTime>
+    <StoneCode>123456789</StoneCode>
+    <LayoutVersion>2</LayoutVersion>
+    <FileId>020202</FileId>
+    <ReferenceDate>20150920</ReferenceDate>
+  </Header>
+  <FinancialTransactions>
+    <Transaction>
+      <Events>
+        <CancellationCharges>0</CancellationCharges>
+        <Cancellations>1</Cancellations>
+        <Captures>0</Captures>
+        <ChargebackRefunds>0</ChargebackRefunds>
+        <Chargebacks>0</Chargebacks>
+        <Payments>0</Payments>
+      </Events>
+      <AcquirerTransactionKey>12345678912356</AcquirerTransactionKey>
+      <InitiatorTransactionKey>1117737</InitiatorTransactionKey>
+      <AuthorizationDateTime>20150818155931</AuthorizationDateTime>
+      <CaptureLocalDateTime>20150818125935</CaptureLocalDateTime>
+      <Poi>
+        <PoiType>4</PoiType>
+      </Poi>
+      <Cancellations>
+        <Cancellation>
+          <OperationKey>3635000017434024</OperationKey>
+          <CancellationDateTime>20150920034340</CancellationDateTime>
+          <ReturnedAmount>20.000000</ReturnedAmount>
+          <Billing>
+            <ChargedAmount>19.602000</ChargedAmount>
+            <PrevisionChargeDate>20150921</PrevisionChargeDate>
+          </Billing>
+        </Cancellation>
+      </Cancellations>
+      <Installments>
+        <Installment>
+          <InstallmentNumber>1</InstallmentNumber>
+          <GrossAmount>20.000000</GrossAmount>
+          <NetAmount>19.389317</NetAmount>
+          <PrevisionPaymentDate>20150927</PrevisionPaymentDate>
+          <AdvanceRateAmount>0.212683</AdvanceRateAmount>
+          <AdvancedReceivableOriginalPaymentDate>20151017</AdvancedReceivableOriginalPaymentDate>
+        </Installment>
+      </Installments>
+    </Transaction>
+    <Transaction>
+      <Events>
+        <CancellationCharges>0</CancellationCharges>
+        <Cancellations>0</Cancellations>
+        <Captures>1</Captures>
+        <ChargebackRefunds>0</ChargebackRefunds>
+        <Chargebacks>0</Chargebacks>
+        <Payments>0</Payments>
+      </Events>
+      <AcquirerTransactionKey>12345678912345</AcquirerTransactionKey>
+      <InitiatorTransactionKey>1331632</InitiatorTransactionKey>
+      <AuthorizationDateTime>20150920030009</AuthorizationDateTime>
+      <CaptureLocalDateTime>20150920000010</CaptureLocalDateTime>
+      <AccountType>2</AccountType>
+      <InstallmentType>1</InstallmentType>
+      <NumberOfInstallments>1</NumberOfInstallments>
+      <AuthorizedAmount>50.000000</AuthorizedAmount>
+      <CapturedAmount>50.000000</CapturedAmount>
+      <AuthorizationCurrencyCode>986</AuthorizationCurrencyCode>
+      <IssuerAuthorizationCode>094736</IssuerAuthorizationCode>
+      <BrandId>2</BrandId>
+      <CardNumber>132456******1122</CardNumber>
+      <Poi>
+        <PoiType>4</PoiType>
+      </Poi>
+      <Installments>
+        <Installment>
+          <InstallmentNumber>1</InstallmentNumber>
+          <GrossAmount>50.000000</GrossAmount>
+          <NetAmount>49.005000</NetAmount>
+          <PrevisionPaymentDate>20151020</PrevisionPaymentDate>
+        </Installment>
+      </Installments>
+    </Transaction>
+    <Transaction>
+      <Events>
+        <CancellationCharges>0</CancellationCharges>
+        <Cancellations>1</Cancellations>
+        <Captures>1</Captures>
+        <ChargebackRefunds>0</ChargebackRefunds>
+        <Chargebacks>0</Chargebacks>
+        <Payments>0</Payments>
+      </Events>
+      <AcquirerTransactionKey>36350017433715</AcquirerTransactionKey>
+      <InitiatorTransactionKey>1331697</InitiatorTransactionKey>
+      <AuthorizationDateTime>20150920033610</AuthorizationDateTime>
+      <CaptureLocalDateTime>20150920003610</CaptureLocalDateTime>
+      <AccountType>2</AccountType>
+      <InstallmentType>1</InstallmentType>
+      <NumberOfInstallments>1</NumberOfInstallments>
+      <AuthorizedAmount>125.790000</AuthorizedAmount>
+      <CapturedAmount>125.790000</CapturedAmount>
+      <CanceledAmount>125.790000</CanceledAmount>
+      <AuthorizationCurrencyCode>986</AuthorizationCurrencyCode>
+      <IssuerAuthorizationCode>661137</IssuerAuthorizationCode>
+      <BrandId>1</BrandId>
+      <CardNumber>123456******1122</CardNumber>
+      <Poi>
+        <PoiType>4</PoiType>
+      </Poi>
+      <Cancellations>
+        <Cancellation>
+          <CancellationDateTime>20150920000000</CancellationDateTime>
+          <ReturnedAmount>125.790000</ReturnedAmount>
+        </Cancellation>
+      </Cancellations>
+      <Installments>
+        <Installment>
+          <InstallmentNumber>1</InstallmentNumber>
+          <GrossAmount>125.790000</GrossAmount>
+          <NetAmount />
+        </Installment>
+      </Installments>
+    </Transaction>
+  </FinancialTransactions>
+  <FinancialEvents>
+    <Event>
+      <EventId>29869413</EventId>
+      <Description>PosRent</Description>
+      <Type>-22</Type>
+      <PrevisionPaymentDate>20150923</PrevisionPaymentDate>
+      <Amount>-590.000000</Amount>
+    </Event>
+  </FinancialEvents>
+  <FinancialTransactionsAccounts>
+    <Transaction>
+      <Events>
+        <CancellationCharges>0</CancellationCharges>
+        <Cancellations>0</Cancellations>
+        <Captures>0</Captures>
+        <ChargebackRefunds>0</ChargebackRefunds>
+        <Chargebacks>0</Chargebacks>
+        <Payments>1</Payments>
+      </Events>
+      <AcquirerTransactionKey>31550012403598</AcquirerTransactionKey>
+      <InitiatorTransactionKey>ad50f27deee549b2</InitiatorTransactionKey>
+      <AuthorizationDateTime>20150803210946</AuthorizationDateTime>
+      <CaptureLocalDateTime>20150803182445</CaptureLocalDateTime>
+      <Poi>
+        <PoiType>4</PoiType>
+      </Poi>
+      <Installments>
+        <Installment>
+          <InstallmentNumber>1</InstallmentNumber>
+          <GrossAmount>123.440000</GrossAmount>
+          <NetAmount>120.354375</NetAmount>
+          <PaymentDate>20150920</PaymentDate>
+          <PaymentId>109963</PaymentId>
+        </Installment>
+      </Installments>
+    </Transaction>
+    <Transaction>
+      <Events>
+        <CancellationCharges>0</CancellationCharges>
+        <Cancellations>0</Cancellations>
+        <Captures>0</Captures>
+        <ChargebackRefunds>0</ChargebackRefunds>
+        <Chargebacks>0</Chargebacks>
+        <Payments>1</Payments>
+      </Events>
+      <AcquirerTransactionKey>31550012405762</AcquirerTransactionKey>
+      <InitiatorTransactionKey>f172e42e9aa7446e</InitiatorTransactionKey>
+      <AuthorizationDateTime>20150803212449</AuthorizationDateTime>
+      <CaptureLocalDateTime>20150803183941</CaptureLocalDateTime>
+      <Poi>
+        <PoiType>4</PoiType>
+      </Poi>
+      <Installments>
+        <Installment>
+          <InstallmentNumber>1</InstallmentNumber>
+          <GrossAmount>468.400000</GrossAmount>
+          <NetAmount>457.533120</NetAmount>
+          <PaymentDate>20150920</PaymentDate>
+          <PaymentId>109963</PaymentId>
+        </Installment>
+      </Installments>
+    </Transaction>
+  </FinancialTransactionsAccounts>
+  <FinancialEventAccounts>
+    <Event>
+      <EventId>38883564</EventId>
+      <PaymentId>109963</PaymentId>
+      <Description>FinancialAdjustment</Description>
+      <Type>-27</Type>
+      <PaymentDate>20150920</PaymentDate>
+      <Amount>900.890000</Amount>
+    </Event>
+  </FinancialEventAccounts>
+  <Payments>
+    <Payment>
+      <Id>109963</Id>
+      <TotalAmount>1478.77</TotalAmount>
+      <FavoredBankAccount>
+        <BankCode>1</BankCode>
+        <BankBranch>24111</BankBranch>
+        <BankAccountNumber>0123456</BankAccountNumber>
+      </FavoredBankAccount>
+    </Payment>
+  </Payments>
+  <Trailer>
+    <CapturedTransactionsQuantity>2</CapturedTransactionsQuantity>
+    <CanceledTransactionsQuantity>3</CanceledTransactionsQuantity>
+    <PaidInstallmentsQuantity>2</PaidInstallmentsQuantity>
+    <ChargedCancellationsQuantity>0</ChargedCancellationsQuantity>
+    <ChargebacksQuantity>0</ChargebacksQuantity>
+    <ChargebacksRefundQuantity>0</ChargebacksRefundQuantity>
+    <ChargedChargebacksQuantity>0</ChargedChargebacksQuantity>
+    <PaidChargebacksRefundQuantity>0</PaidChargebacksRefundQuantity>
+    <PaidEventsQuantity>1</PaidEventsQuantity>
+    <ChargedEventsQuantity>0</ChargedEventsQuantity>
+  </Trailer>
 </Conciliation>
 ```
 
-### Nó Header
+## Arquivos de Teste
 
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| GenerationDateTime | Data/Hora | 14 | Data/Hora de geração do arquivo (Formato: aaaammddHHmmss)|
-| StoneCode | Num | 9 | Código identificador da loja |
-| MerchantName | Alfa | 60 | Razão Social |
-| MerchantTaxId | Alfa | 25 | CNPJ da loja |
-| LayoutVersion | Num | 3 | Versão do Layout do arquivo |
-| Field | Num | 26 | Código identificador do arquivo |
-| ReferenceDate |Date|8| Data a que se refere o arquivo|
+Disponibilizamos 6 arquivos para o uso em testes, esses arquivos mostram o histórico de seis transações, são elas e seus respectivos históricos:
 
-### Nó Transaction
+| AcquirerTransactionKey | Histórico |
+| ---------------------- | --------- |
+| 11111111111111 | Captura -> Pagamento |
+| 22222222222222 | Captura -> Cancelamento -> Pagamento |
+| 33333333333333 | Captura -> ChargeBack -> Pagamento |
+| 44444444444444 | Captura -> Chargeback -> ChargebackRefund -> Pagamento |
+| 55555555555555 | Captura -> Pagamento -> ChargeBack -> Pagamento -> ChargebackRefund -> Pagamento |
+| 66666666666666 | Captura -> Pagamento -> Cancelamento -> Pagamento |
 
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| AuthorizationDateTime| Data/Hora | 14 | Data/Hora da autorização (Formato: aaaammddHHmmss) |
-| OrderReference | Alfa | 128 | Código recebido pelo sistema cliente |
-| StoneId | Num | 14 | Identificador único da transação (NSU) |
-| CardNumber | Alfa | 19 | Número do cartão (truncado) |
-| Brand | Num | 2 | Bandeira do cartão |
-| AuthorizationCode | Num | 6 | Código da autorização fornecido pelo emissor. |
-| AuthorizedAmount | Float | 20 | Valor autorizado |
-| AuthorizedCurrencyCode | Num | 4 | Código da moeda |
-| CapturedAmount | Float | 20 | Valor capturado |
-| CaptureDateTime | Data/Hora | 14 | Data/Hora da captura (Formato: aaaammddHHmmss) |
-| SalePlanType | Alfa | 60 | Plano de venda |
-| ProductType | Alfa | 4 | Tipo do produto |
-| NumberOfInstallments | Num | 4 | Número de parcelas |
-| CaptureMethod | Alfa | 2 | Meio de captura |
-| SerialNumber | Alfa | 50 | Número serial do POS (vazio caso o meio de captura seja ecommerce) |
-| BankId | Num | 3 | Código do banco |
-| BankBranch | Alfa | 6 | Agência bancária |
-| BankAccount | Alfa | 11 | Conta bancária |
-| Installments | Container | ## | Contém as parcelas da transação. |
+> Arquivos:
+>
+> [ Arquivo do dia 20151012](/attachment/HomologacaoV2/20151012.xml)
+>
+> [ Arquivo do dia 20151013](/attachment/HomologacaoV2/20151013.xml)
+>
+> [ Arquivo do dia 20151016](/attachment/HomologacaoV2/20151016.xml)
+>
+> [ Arquivo do dia 20151017](/attachment/HomologacaoV2/20151017.xml)
+>
+> [ Arquivo do dia 20151020](/attachment/HomologacaoV2/20151020.xml)
+>
+> [ Arquivo do dia 20151021](/attachment/HomologacaoV2/20151021.xml)
 
-### Nó Installment
+# Apêndice
 
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| InstallmentNumber | Num | 4 | Número da parcela |
-| GrossAmount | Float | 20 | Valor bruto da parcela |
-| NetAmount | Float | 20 | Valor líquido da parcela |
-| PaymentDate | Data | 8 | Data de pagamento da parcela (Formato: aaaammdd) |
-| AdvanceAmount | Float | 20 | Valor cobrado pela antecipação do recebível |
-| OriginalPaymentDate | Data | 8 | Data original de pagamento da parcela (Formato: aaaammdd) |
-
-### Nó Trailer
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| CapturedTransactionsQuantity | Num | 10 | Quantidade total de transações capturadas |
-| RefundedTransactionsQuantity | Num | 10 | Quantidade total de transações canceladas |
-| PaidTransactionsQuantity | Num | 10 | Quantidade total de transações pagas |
-
-## Tabela de referência dos elementos
-
-### ChargeBack
-
-Nó filho de [Installment](#installment) que contém informações sobre o chargeback, como data do pagemento, Id do chargeback, data em que ocorreu o chargeback, etc.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| Id | Num | 10 | Identificador do chargeback |
-| Amount | Float | 20 | Valor do chargeback |
-| Date | Data | 8 | Data em que ocorreu o chargeback. (Formato: aaaammdd) |
-| PaymentDate | Data | 8 | Data em que o chargeback será descontado. (Formato: aaaammdd) |
-
-### ChargeBackRefund
-
-Nó filho de [Installment](#installment) que contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| Id | Num | 10 | Identificador da reapresentação do chargeback |
-| Amount | Float | 20 | Valor da reapresentação do chargeback |
-| Date | Data | 8 | Data em que ocorreu a reapresentação do chargeback. (Formato: aaaammdd) |
-| PaymentDate | Data | 8 | Data em que a reapresentação o chargeback será creditada. (Formato: aaaammdd) |
-
-### Conciliation
-
-| Elemento | Descrição |
-| -------- | --------- |
-| [Header](#header) | Contém informações referentes à loja e ao arquivo, como razão social, CNPJ, data de geração do arquivo, etc.|
-| [FinancialTransactions](#financialtransactions) | Contém as transações capturadas no dia, inclusive as transações que foram capturadas e canceladas no mesmo dia.|
-| [FinancialEvents](#financialevents) | Contém os eventos que ocorreram no dia, como (Ajuste MDR, aluguel de POS, etc)|
-| [FinancialTransactionPayments](#financialtransactionpayments) | Contém as transações que foram pagas no dia. Contém também os descontos (referentes à cancelamentos) realizados no dia.|
-| [FinacialEventPayments](#finacialeventpayments) | Contém os eventos que foram descontos ou creditados no dia, como (Ajuste MDR, aluguel de POS, etc)|
-| [Messages](#messages) | Contém as observações referentes às operações do dia.|
-| [Trailer](#trailer) | Contém os totalizadores do arquivo, como total de transações capturadas, total líquido de transações pagas, etc.|
-
-### Event
-
-Nó filho de [FinancialEvents](#financialevents) ou de [FinacialEventPayments](#finacialeventpayments), descreve os detalhes do evento ocorrido.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| EventId | Num | 10 | Código identificador do evento |
-| Description | Alfa | 60 | Descrição do evento |
-| Type | Num | 2 | Tipo do evento |
-| PaymentDate | Data | 8 | Data em que o evento será pago. (Formato: aaaammdd) |
-| Amount | Float | 20 | Valor do evento |
-| BankId | Num | 3 | Código do banco |
-| BankBranch | Alfa | 6 | Agência bancária |
-| BankAccount | Alfa | 11 | Conta bancária |
-
-### FinancialEvents
-
-Nó filho de [Conciliation](#conciliation) que contém os eventos que ocorreram no dia, como (Ajuste MDR, aluguel de POS, etc)
-
-| Elemento | Descrição |
-| -------- | --------- |
-| [Event](#event) | Contém informações sobre o evento ocorrido |
-
-### FinacialEventPayments
-
-Nó filho de [Conciliation](#conciliation) que contém os eventos que foram descontos ou creditados no dia, como (Ajuste MDR, aluguel de POS, etc).
-
-| Elemento | Descrição |
-| -------- | --------- |
-| [Event](#event) | Contém informações sobre o evento ocorrido |
-
-### FinancialTransactions
-
-Nó filho de [Conciliation](#conciliation) que contém as transações capturadas no dia, inclusive as transações que foram capturadas e canceladas no mesmo dia.
-
-| Elemento | Descrição |
-| -------- | --------- |
-| [Transaction](#transaction) | Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc. |
-
-### FinancialTransactionPayments
-
-Nó filho de [Conciliation](#conciliation) que contém as transações que foram pagas no dia. Contém também os descontos, referentes à cancelamentos, realizados no dia.
-
-| Elemento | Descrição |
-| -------- | --------- |
-| [Transaction](#transaction) | Contém informações referentes à transação, como valor total da transação, número de parcelas da transação, etc. |
-
-### Header
-
-Nó filho de [Conciliation](#conciliation) que contém as informações referentes à loja e ao arquivo, como razão social, CNPJ, data de geração do arquivo, etc.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| GenerationDateTime | Data/Hora | 14 | Data/Hora de geração do arquivo (Formato: aaaammddHHmmss)|
-| StoneCode | Num | 9 | Código identificador da loja |
-| MerchantName | Alfa | 60 | Razão Social |
-| MerchantTaxId | Alfa | 25 | CNPJ da loja |
-| LayoutVersion | Num | 3 | Versão do Layout do arquivo |
-| Field | Num | 26 | Código identificador do arquivo |
-
-
-### Installment
-
-Nó filho de [Installments](#installments) que contém informações referentes a uma parcela específica, como valor bruto e valor líquido, número da parcela etc.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| InstallmentNumber | Num | 4 | Número da parcela |
-| GrossAmount | Float | 20 | Valor bruto da parcela |
-| NetAmount | Float | 20 | Valor líquido da parcela |
-| PaymentDate | Data | 8 | Data de pagamento da parcela (Formato: aaaammdd) |
-| AdvanceAmount | Float | 20 | Valor cobrado pela antecipação do recebível |
-| OriginalPaymentDate | Data | 8 | Data original de pagamento da parcela (Formato: aaaammdd) |
-| [ChargeBack](#chargeback) | Container | ## | Contém informações sobre o chargeback, como data do pagemento, Id do chargeback, data em que ocorreu o chargeback, etc. |
-| [ChargeBackRefund](#chargebackrefund) | Container | ## | Contém informações sobre a reapresentação do chargeback, como a data em que ocorreu a reapresentação, data de pagamento, etc. |
-
-### Installments
-
-Nó filho de [Transaction](#transaction) que contém as parcelas da transação.
-
-| Elemento | Descrição |
-| -------- | --------- |
-| [Installment](#installment) | Contém informações referentes a uma parcela específica, como valor bruto e valor líquido, número da parcela etc. |
-
-### Message
-
-Nó filho de [Messages](#messages) que contém as observações referentes às operações do dia.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| MessageId | Num | 9 | Código identificador do mensagem |
-| Value | Alfa | 200 | Descrição da mensagem |
-| Type | Num | 4 | Tipo da mensagem |
-
-## Messages
-
-Nó filho de [Conciliation](#conciliation) que contém as observações referentes às operações do dia.
-
-| Elemento | Descrição |
-| -------- | --------- |
-| [Message](#message) | Contém a informação referente à observação referente às operações do dia. |
-
-### Refund
-
-Nó filho de [Transaction](#transaction) que contém informações referentes ao cancelamento, como data de desconto do cancelamento e valor total do cancelamento.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| RefundAmount | Float | 20 | Valor do cancelamento (pode ser igual ou maior que o valor capturado) |
-| RefundPaymentDate | Data | 8 | Data em que o cancelamento/estorno será descontado. (Formato: aaaammdd) |
-| RefundDate | Data | 8 | Data em que ocorreu o cancelamento. (Formato: aaaammdd) |
-| RefundGrossAmount | Float | 20 | Valor bruto do cancelamento|
-
-### Trailer
-
-Nó filho de [Conciliation](#conciliation) que contém os totalizadores do arquivo, como total de transações capturadas, total líquido de transações pagas, etc.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| CapturedTransactionsQuantity | Num | 10 | Quantidade total de transações capturadas |
-| RefundedTransactionsQuantity | Num | 10 | Quantidade total de transações canceladas |
-| PaidTransactionsQuantity | Num | 10 | Quantidade total de transações pagas |
-
-### Transaction
-
-Nó filho de [FinancialTransactions](#financialtransactions) ou de [FinancialTransactionPayments](#financialtransactionpayments) que contém as informações referentes à transação, como valor total da transação, número de parcelas da transação, etc.
-
-| Elemento | Tipo | Tamanho | Descrição |
-| -------- | ---- | ------- | --------- |
-| AuthorizationDateTime| Data/Hora | 14 | Data/Hora da autorização (Formato: aaaammddHHmmss) |
-| OrderReference | Alfa | 128 | Código recebido pelo sistema cliente |
-| StoneId | Num | 14 | Identificador único da transação (NSU) |
-| CardNumber | Alfa | 19 | Número do cartão (truncado) |
-| Brand | Num | 2 | Bandeira do cartão |
-| AuthorizationCode | Num | 6 | Código da autorização fornecido pelo emissor. |
-| AuthorizedAmount | Float | 20 | Valor autorizado |
-| AuthorizedCurrencyCode | Num | 4 | Código da moeda |
-| CapturedAmount | Float | 20 | Valor capturado |
-| CaptureDateTime | Data/Hora | 14 | Data/Hora da captura (Formato: aaaammddHHmmss) |
-| SalePlanType | Alfa | 60 | Plano de venda |
-| ProductType | Alfa | 4 | Tipo do produto |
-| NumberOfInstallments | Num | 4 | Número de parcelas |
-| CaptureMethod | Alfa | 2 | Meio de captura |
-| SerialNumber | Alfa | 50 | Número serial do POS (vazio caso o meio de captura seja ecommerce) |
-| BankId | Num | 3 | Código do banco |
-| BankBranch | Alfa | 6 | Agência bancária |
-| BankAccount | Alfa | 11 | Conta bancária |
-| [Installments](#installments) | Container | ## | Contém as parcelas da transação. |
-| [Refund](#refund) | Container | ## | Contém informações referentes ao cancelamento, como data de desconto do cancelamento e valor total do cancelamento. |
-
-## Apêndice
-
-### CaptureMethod
+### <cap id="CaptureMethod">CaptureMethod<sup>v1</sup> / POIType<sup>v2</sup></cap>
 
 |Valor|Descrição|
 |-----|---------|
@@ -635,28 +1043,31 @@ Nó filho de [FinancialTransactions](#financialtransactions) ou de [FinancialTra
 |3|TEF|
 |4|ECOMMERCE|
 
-### Brand
+### <br id="Brand">Brand<sup>v1v2</sup></br>
 
 |Valor|Descrição|
 |-----|---------|
 |1|Visa|
 |2|MasterCard|
 
-### ProductType
+### <pr id="ProductType">ProductType<sup>v1</sup> / AccountType<sup>v2</sup></pr>
+
+<div class="page-break" />
 
 |Valor|Descrição|
 |-----|---------|
 |1|Debit|
 |2|Credit|
 
-### SalePlanType
+### <spt id="SalePlanType"> SalePlanType<sup>v1</sup> /InstallmentType<sup>v2</sup></spt>
 
 |Valor|Descrição|
 |-----|---------|
 |1|à vista lojista|
 |2|parcelado lojista|
+|3|parcelado emissor|
 
-### Eventid
+### <ty id="type">Type<sup>v1v2</sup></ty>
 
 |Valor|Descrição|
 |-----|---------|
