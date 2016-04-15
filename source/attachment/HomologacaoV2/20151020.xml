@@ -14,8 +14,8 @@
              <CancellationCharges>0</CancellationCharges>
              <Cancellations>0</Cancellations>
              <Captures>0</Captures>
-             <ChargebackRefunds>0</ChargebackRefunds>
-             <Chargebacks>1</Chargebacks>
+             <ChargebackRefunds>1</ChargebackRefunds>
+             <Chargebacks>0</Chargebacks>
              <Payments>0</Payments>
          </Events>
          <AcquirerTransactionKey>55555555555555</AcquirerTransactionKey>
